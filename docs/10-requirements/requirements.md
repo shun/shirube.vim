@@ -92,13 +92,17 @@ Shirube (標) は Neovim/Vim のバッファ上でファイルシステムをテ
 3. 各ファイルに一意な ID を付与し、BufferState に保存する。
 4. レンダリング:
    - 行フォーマット: `/ID filename` (例: `/1 myfile.txt`)
+   - ディレクトリは末尾に `/` を付けて表示する。
    - Conceal: `syntax match ShirubeId /^\/\d*\s/ conceal` を適用する。
    - Metadata: サイズ/アイコン/パーミッション等は Virtual Text (extmark) で装飾表示する。
+   - ディレクトリ/ファイルで文字色を分ける。
+   - Metadata は右寄せで整列表示する。
 5. ナビゲーション:
-   - `keymap_enter=true` の場合に `<CR>` でカーソル行を開く（デフォルト無効）。
-     - ディレクトリ行はそのディレクトリの一覧を表示する。
-     - ファイル行は通常のバッファで開く。
-   - `keymap_parent=true` の場合に `-` で親ディレクトリへ移動する（デフォルト無効）。
+   - `keymaps` で指定されたキーに応じて動作する（デフォルト無効）。
+     - `open_cursor`: カーソル行を開く（ディレクトリ行は移動、ファイル行は開く）。
+     - `open_parent`: 親ディレクトリへ移動する。
+   - `keymaps_global` で指定されたキーに応じて Shirube を開く（デフォルト無効）。
+     - `open_shirube`: 現在のバッファ/ディレクトリから Shirube を開く。
 
 ### 7.2 編集と変更検知 (The Mutator)
 1. バッファ全行を解析する。
@@ -142,8 +146,8 @@ interface Adapter {
 ### 7.6 設定
 - `ui_mode`: "float" | "buffer"。確認 UI の表示方式。default: "float"。
 - `skip_confirm`: boolean。確認 UI の表示を省略する。default: false。
-- `keymap_enter`: boolean。`<CR>` でカーソル行を開く。default: false。
-- `keymap_parent`: boolean。`-` で親ディレクトリへ移動する。default: false。
+- `keymaps`: `{ "<key>": "open_cursor" | "open_parent" }`。default: `{}`。
+- `keymaps_global`: `{ "<key>": "open_shirube" }`。default: `{}`。
 
 ## 8. データ仕様
 

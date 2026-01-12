@@ -17,6 +17,10 @@ const resolvePath = (basePath: string, name: string): string => {
   return normalize(resolve(basePath, name));
 };
 
+const stripTrailingSlash = (value: string): string => {
+  return value.replace(/\/+$/, "");
+};
+
 export const parseBuffer = (
   lines: string[],
   state: BufferState,
@@ -35,7 +39,7 @@ export const parseBuffer = (
     const matched = line.match(/^\/(\d+)\s+(.*)$/);
     if (matched) {
       const id = Number(matched[1]);
-      const name = matched[2];
+      const name = stripTrailingSlash(matched[2]);
       if (name.trim().length === 0) {
         errors.push(`empty name for id: ${id}`);
         continue;

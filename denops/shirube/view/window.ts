@@ -27,7 +27,7 @@ const applyVirtualText = async (
   for (const virt of result.virtTexts) {
     await denops.call("nvim_buf_set_extmark", bufnr, ns, virt.line, 0, {
       virt_text: virt.chunks,
-      virt_text_pos: "eol",
+      virt_text_pos: "right_align",
     });
   }
 };

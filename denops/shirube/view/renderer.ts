@@ -12,6 +12,11 @@ export interface RenderResult {
   virtTexts: VirtText[];
 }
 
+type MetaWidths = {
+  size: number;
+  permissions: number;
+};
+
 const formatSize = (entry: Entry): string => {
   if (entry.isDirectory) {
     return "-";
@@ -30,27 +35,60 @@ const formatIcon = (entry: Entry): string => {
   return entry.isDirectory ? "[d]" : "[f]";
 };
 
-const buildVirtText = (entry: Entry): VirtTextChunk[] => {
+const formatName = (entry: Entry): string => {
+  if (!entry.isDirectory) {
+    return entry.name;
+  }
+  return entry.name.endsWith("/") ? entry.name : `${entry.name}/`;
+};
+
+const padLeft = (value: string, width: number): string => {
+  return value.padStart(width, " ");
+};
+
+const padRight = (value: string, width: number): string => {
+  return value.padEnd(width, " ");
+};
+
+const calculateWidths = (entries: Entry[]): MetaWidths => {
+  const widths: MetaWidths = { size: 1, permissions: 1 };
+  for (const entry of entries) {
+    widths.size = Math.max(widths.size, formatSize(entry).length);
+    widths.permissions = Math.max(
+      widths.permissions,
+      formatPermissions(entry).length,
+    );
+  }
+  return widths;
+};
+
+const buildVirtText = (
+  entry: Entry,
+  widths: MetaWidths,
+): VirtTextChunk[] => {
+  const size = padLeft(formatSize(entry), widths.size);
+  const permissions = padRight(formatPermissions(entry), widths.permissions);
   return [
     [` ${formatIcon(entry)}`, "ShirubeIcon"],
-    [` ${formatSize(entry)}`, "ShirubeMeta"],
-    [` ${formatPermissions(entry)}`, "ShirubeMeta"],
+    [` ${size}`, "ShirubeMeta"],
+    [` ${permissions}`, "ShirubeMeta"],
   ];
 };
 
 const formatLine = (entry: Entry): string => {
-  return `/${entry.id} ${entry.name}`;
+  return `/${entry.id} ${formatName(entry)}`;
 };
 
 export const renderEntries = (entries: Entry[]): RenderResult => {
   if (entries.length === 0) {
     return { lines: [""], virtTexts: [] };
   }
+  const widths = calculateWidths(entries);
   return {
     lines: entries.map(formatLine),
     virtTexts: entries.map((entry, index) => ({
       line: index,
-      chunks: buildVirtText(entry),
+      chunks: buildVirtText(entry, widths),
     })),
   };
 };
