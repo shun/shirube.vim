@@ -18,6 +18,10 @@ function! shirube#open_cursor() abort
   call shirube#_request('open_cursor', [bufnr('%'), getline('.')])
 endfunction
 
+function! shirube#open_from_current() abort
+  call shirube#_request('open_from_current', [])
+endfunction
+
 function! shirube#open_parent() abort
   let l:url = bufname('%')
   if l:url !~# '^shirube://'

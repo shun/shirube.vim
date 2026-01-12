@@ -38,39 +38,51 @@ call plug#end()
 Shirube バッファ内のキーマップはデフォルトで無効です。  
 有効化するには `g:shirube` に設定を追加してからバッファを開いてください。
 
-- `keymap_enter`: `<CR>` でカーソル行を開く
-  - ディレクトリ: そのディレクトリの一覧を表示
-  - ファイル: 通常のバッファで開く
-- `keymap_parent`: `-` で親ディレクトリへ移動
+- `keymaps`: キーとアクションの対応表
+  - `open_cursor`: カーソル行を開く（ディレクトリなら移動、ファイルなら開く）
+  - `open_parent`: 親ディレクトリへ移動
+- `keymaps_global`: グローバルキーマップ（通常バッファで Shirube を開く）
+  - `open_shirube`: 現在のバッファ/ディレクトリから Shirube を開く
 
-例:
+ 例:
 ```vim
 let g:shirube = {
-      \ "keymap_enter": v:true,
-      \ "keymap_parent": v:true,
+      \ "keymaps": {
+      \   "<CR>": "open_cursor",
+      \   "-": "open_parent",
+      \ },
+      \ "keymaps_global": {
+      \   "-": "open_shirube",
+      \ },
       \ }
 ```
 
 ## 設定
 `g:shirube` の辞書で設定します（値が不正な場合はデフォルトにフォールバック）。
+設定の解釈と適用は Deno (TypeScript) 側で行います。
 
 - `skip_confirm`: boolean（default: `false`）
   - true の場合、確認 UI を表示せず Action を実行
 - `ui_mode`: `"float" | "buffer"`（default: `"float"`）
   - `float`: フローティング UI（Neovim は Floating Window、Vim は Popup）
   - `buffer`: 確認用の専用バッファ
-- `keymap_enter`: boolean（default: `false`）
-  - true の場合、`<CR>` でカーソル行を開く
-- `keymap_parent`: boolean（default: `false`）
-  - true の場合、`-` で親ディレクトリへ移動する
+- `keymaps`: `{ "<key>": "open_cursor" | "open_parent" }`（default: `{}`）
+  - キーは Vim の表記で指定する（例: `<CR>`, `-`, `h`）
+- `keymaps_global`: `{ "<key>": "open_shirube" }`（default: `{}`）
+  - グローバルに Shirube を開くキーを指定する
 
-例:
+ 例:
 ```vim
 let g:shirube = {
       \ "skip_confirm": v:false,
       \ "ui_mode": "float",
-      \ "keymap_enter": v:true,
-      \ "keymap_parent": v:true,
+      \ "keymaps": {
+      \   "<CR>": "open_cursor",
+      \   "-": "open_parent",
+      \ },
+      \ "keymaps_global": {
+      \   "-": "open_shirube",
+      \ },
       \ }
 ```
 

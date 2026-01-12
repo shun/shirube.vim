@@ -20,7 +20,7 @@ nvim --headless -u NONE -i NONE -n \
   +"set rtp^=$REPO" \
   +"set rtp+=$REPO/after" \
   +"runtime plugin/shirube.vim" \
-  +"let g:shirube={'skip_confirm':v:true,'ui_mode':'buffer','keymap_enter':v:true}" \
+  +"let g:shirube={'skip_confirm':v:true,'ui_mode':'buffer','keymaps':{'<CR>':'open_cursor'},'keymaps_global':{'-':'open_shirube'}}" \
   +"let v:errors=[]" \
   +"redir => g:shirube_log" \
   +"Shirube $TEST_DIR" \
@@ -36,7 +36,8 @@ nvim --headless -u NONE -i NONE -n \
 - shirube バッファが開く（`bufname('%')` が `shirube://` で始まる）。
 - 行数が 0 より大きい（一覧が描画されている）。
 - 先頭行が `/ID name` 形式になっている（ID と空白が含まれる）。
-- `keymap_enter=true` のとき `<CR>` でディレクトリ行を開くと `shirube://` のバッファに遷移する。
+- `keymaps` に `"<CR>": "open_cursor"` を設定したとき、`<CR>` でディレクトリ行を開くと `shirube://` のバッファに遷移する。
+- `keymaps_global` に `"-": "open_shirube"` を設定したとき、通常バッファで `-` を押すと Shirube を開く。
 
 ## 追加検証（実装に合わせて拡充）
 - 変更検知（Create/Move/Rename/Delete）が Action に変換される。

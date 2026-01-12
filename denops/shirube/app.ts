@@ -4,10 +4,20 @@ import { createLocalAdapter } from "./adapter/local.ts";
 import { buildActions } from "./action/diff.ts";
 import { executeActions } from "./action/executor.ts";
 import { parseBuffer } from "./action/parser.ts";
-import { loadConfig } from "./config.ts";
+import {
+  loadConfig,
+  type Config,
+  type GlobalKeymapAction,
+  type KeymapAction,
+} from "./config.ts";
 import { createState, getState, setEntries, setState } from "./state.ts";
 import type { BufferState } from "./types.ts";
-import { isShirubeUrl, normalizeBufnr, normalizeUrl } from "./util.ts";
+import {
+  isShirubeUrl,
+  normalizeBufnr,
+  normalizeUrl,
+  urlToPath,
+} from "./util.ts";
 import { confirmActions } from "./view/confirm.ts";
 import { renderEntries } from "./view/renderer.ts";
 import { renderBuffer } from "./view/window.ts";
@@ -102,11 +112,71 @@ const ensureModified = async (denops: Denops): Promise<void> => {
   await denops.cmd("setlocal modified");
 };
 
+const keymapActions: Record<KeymapAction, string> = {
+  open_cursor: "shirube#open_cursor()",
+  open_parent: "shirube#open_parent()",
+};
+
+const globalKeymapActions: Record<GlobalKeymapAction, string> = {
+  open_shirube: "shirube#open_from_current()",
+};
+
+const applyKeymaps = async (
+  denops: Denops,
+  config: Config,
+): Promise<void> => {
+  const entries = Object.entries(config.keymaps);
+  if (entries.length === 0) {
+    return;
+  }
+  for (const [lhs, action] of entries) {
+    const rhs = keymapActions[action];
+    if (!rhs) {
+      continue;
+    }
+    await denops.cmd(`nnoremap <silent><buffer> ${lhs} :call ${rhs}<cr>`);
+  }
+};
+
+const applyGlobalKeymaps = async (
+  denops: Denops,
+  config: Config,
+): Promise<void> => {
+  const entries = Object.entries(config.keymapsGlobal);
+  if (entries.length === 0) {
+    return;
+  }
+  for (const [lhs, action] of entries) {
+    const rhs = globalKeymapActions[action];
+    if (!rhs) {
+      continue;
+    }
+    await denops.cmd(`nnoremap <silent> ${lhs} :call ${rhs}<cr>`);
+  }
+};
+
+const openFromCurrent = async (denops: Denops): Promise<void> => {
+  const bufname = await denops.call("bufname", "%") as string;
+  if (typeof bufname === "string" && isShirubeUrl(bufname)) {
+    const adapter = resolveAdapter(bufname);
+    const parentUrl = adapter.getParent(bufname);
+    const parentPath = urlToPath(parentUrl);
+    await openTarget(denops, parentPath, "directory");
+    return;
+  }
+  const filePath = await denops.call("expand", "%:p") as string;
+  const target = filePath.length > 0
+    ? await denops.call("expand", "%:p:h") as string
+    : await denops.call("getcwd") as string;
+  await openTarget(denops, target, "directory");
+};
+
 export async function main(denops: Denops): Promise<void> {
   denops.dispatcher = {
     async on_buf_read(bufnr: unknown, url: unknown): Promise<void> {
       const resolvedBufnr = normalizeBufnr(bufnr);
       const resolvedUrl = normalizeUrl(url);
+      const config = await loadConfig(denops);
       const adapter = resolveAdapter(resolvedUrl);
       const entries = await adapter.listDir(resolvedUrl);
       const state = createState(resolvedBufnr, resolvedUrl, adapter);
@@ -114,6 +184,7 @@ export async function main(denops: Denops): Promise<void> {
       setState(state);
       const rendered = renderEntries(registered);
       await renderBuffer(denops, resolvedBufnr, rendered);
+      await applyKeymaps(denops, config);
     },
     async on_buf_write(bufnr: unknown, url: unknown): Promise<void> {
       const resolvedBufnr = normalizeBufnr(bufnr);
@@ -198,5 +269,10 @@ export async function main(denops: Denops): Promise<void> {
       await setBufferVar(denops, resolvedBufnr, "shirube_errors", []);
       await openTarget(denops, result.target.path, result.target.entryType);
     },
+    async open_from_current(): Promise<void> {
+      await openFromCurrent(denops);
+    },
   };
+  const config = await loadConfig(denops);
+  await applyGlobalKeymaps(denops, config);
 }
