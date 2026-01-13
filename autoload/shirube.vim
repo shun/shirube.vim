@@ -10,6 +10,10 @@ function! shirube#on_buf_read() abort
   call shirube#_request('on_buf_read', [bufnr('%'), bufname('%')])
 endfunction
 
+function! shirube#on_vim_enter() abort
+  call shirube#_request('on_vim_enter', [])
+endfunction
+
 function! shirube#on_buf_write() abort
   call shirube#_request('on_buf_write', [bufnr('%'), bufname('%')])
 endfunction

@@ -24,6 +24,7 @@ call plug#end()
 - `:Shirube` でカレントディレクトリを開く
 - `:Shirube {dir}` で任意のディレクトリを開く
 - `:edit shirube://<path>` でも開けます
+- `open_on_startup=true` の場合、`nvim {dir}` で起動すると自動で Shirube を開く
 
 ## 使い方（基本）
 - バッファを直接編集して変更を表現します。
@@ -70,6 +71,8 @@ let g:shirube = {
   - キーは Vim の表記で指定する（例: `<CR>`, `-`, `h`）
 - `keymaps_global`: `{ "<key>": "open_shirube" }`（default: `{}`）
   - グローバルに Shirube を開くキーを指定する
+- `open_on_startup`: boolean（default: `false`）
+  - 起動時にディレクトリ引数が1つ指定された場合、Shirube を開く
 - `log_file`: string（default: `""`）
   - デバッグログの出力先（ファイル/ディレクトリ）
   - ディレクトリ指定時は `shirube.log` に出力する
@@ -86,6 +89,7 @@ let g:shirube = {
       \ "keymaps_global": {
       \   "-": "open_shirube",
       \ },
+      \ "open_on_startup": v:true,
       \ "log_file": "./tmp/nvim",
       \ }
 ```

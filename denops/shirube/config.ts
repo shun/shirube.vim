@@ -13,6 +13,7 @@ export type Config = {
   keymaps: Keymaps;
   keymapsGlobal: GlobalKeymaps;
   logFile: string;
+  openOnStartup: boolean;
 };
 
 const defaultConfig: Config = {
@@ -21,6 +22,7 @@ const defaultConfig: Config = {
   keymaps: {},
   keymapsGlobal: {},
   logFile: "",
+  openOnStartup: false,
 };
 
 const parseBool = (value: unknown, fallback: boolean): boolean => {
@@ -108,6 +110,10 @@ const normalizeConfig = (value: unknown): Config => {
     keymaps,
     keymapsGlobal,
     logFile: parseString(raw.log_file, defaultConfig.logFile),
+    openOnStartup: parseBool(
+      raw.open_on_startup,
+      defaultConfig.openOnStartup,
+    ),
   };
 };
 

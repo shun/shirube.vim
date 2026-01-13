@@ -181,8 +181,80 @@ const openFromCurrent = async (denops: Denops): Promise<void> => {
   await openTarget(denops, target, "directory");
 };
 
+type StartupDecision = {
+  target: string | null;
+  reason: string;
+  debug: Record<string, unknown>;
+};
+
+const resolveStartupDir = async (
+  denops: Denops,
+  config: Config,
+): Promise<StartupDecision> => {
+  const debug: Record<string, unknown> = {
+    openOnStartup: config.openOnStartup,
+  };
+  if (!config.openOnStartup) {
+    return { target: null, reason: "open_on_startup=false", debug };
+  }
+  const argc = await denops.call("argc") as number;
+  debug.argc = argc;
+  const argv = await denops.call("argv") as unknown;
+  debug.argv = argv;
+  if (typeof argc !== "number" || argc !== 1) {
+    return { target: null, reason: "argc!=1", debug };
+  }
+  const arg = await denops.call("argv", 0) as string;
+  debug.argv0 = arg;
+  if (typeof arg !== "string" || arg.length === 0) {
+    return { target: null, reason: "argv0 empty", debug };
+  }
+  const argAbs = await denops.call("fnamemodify", arg, ":p") as string;
+  debug.argv0Abs = argAbs;
+  const isDir = await denops.call("isdirectory", arg) as number;
+  debug.argv0IsDir = isDir;
+  const isFile = await denops.call("filereadable", arg) as number;
+  debug.argv0IsFile = isFile;
+  if (!isDir) {
+    return { target: null, reason: "argv0 not directory", debug };
+  }
+  const cwd = await denops.call("getcwd") as string;
+  debug.cwd = cwd;
+  const bufname = await denops.call("bufname", "%") as string;
+  debug.bufname = bufname;
+  const bufIsShirube = typeof bufname === "string" && isShirubeUrl(bufname);
+  debug.bufIsShirube = bufIsShirube;
+  if (bufIsShirube) {
+    return { target: null, reason: "already shirube", debug };
+  }
+  return { target: arg, reason: "ok", debug };
+};
+
 export async function main(denops: Denops): Promise<void> {
   denops.dispatcher = {
+    async on_vim_enter(): Promise<void> {
+      const config = await loadConfig(denops);
+      const logger = createLogger(config);
+      const decision = await resolveStartupDir(denops, config);
+      await logger.debug("vim_enter.check", {
+        reason: decision.reason,
+        ...decision.debug,
+      });
+      if (!decision.target) {
+        return;
+      }
+      await logger.debug("vim_enter.open", { path: decision.target });
+      try {
+        const pathExpr = await denops.call("string", decision.target) as string;
+        const timerId = await denops.eval(
+          `timer_start(0, {-> shirube#open(${pathExpr})})`,
+        ) as number;
+        await logger.debug("vim_enter.defer", { timerId });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        await logger.error("vim_enter.defer.error", { message });
+      }
+    },
     async on_buf_read(bufnr: unknown, url: unknown): Promise<void> {
       const resolvedBufnr = normalizeBufnr(bufnr);
       const resolvedUrl = normalizeUrl(url);

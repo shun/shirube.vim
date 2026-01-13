@@ -87,7 +87,7 @@ Shirube (標) は Neovim/Vim のバッファ上でファイルシステムをテ
 ## 7. 機能要件
 
 ### 7.1 読み込みと表示 (The View)
-1. shirube://* またはディレクトリオープンを検知する。
+1. shirube://* または（設定が有効なら）ディレクトリオープンを検知する。
 2. Adapter を通じてファイル一覧を取得する。
 3. 各ファイルに一意な ID を付与し、BufferState に保存する。
 4. レンダリング:
@@ -148,6 +148,7 @@ interface Adapter {
 - `skip_confirm`: boolean。確認 UI の表示を省略する。default: false。
 - `keymaps`: `{ "<key>": "open_cursor" | "open_parent" }`。default: `{}`。
 - `keymaps_global`: `{ "<key>": "open_shirube" }`。default: `{}`。
+- `open_on_startup`: boolean。起動時にディレクトリ引数が1つ指定された場合に Shirube を開く。default: false。
 - `log_file`: string。デバッグログの出力先（ファイル/ディレクトリ）。default: ""。
 
 ## 8. データ仕様
