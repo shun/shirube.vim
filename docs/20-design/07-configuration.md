@@ -11,13 +11,18 @@
 - `ui_mode`: `"float" | "buffer"`（default: `"float"`）
   - `float`: フローティング UI を使用する。
   - `buffer`: 専用バッファ UI を使用する。
-- `keymaps`: `{ "<key>": "open_cursor" | "open_parent" }`（default: `{}`）
+- `keymaps`: `{ "<key>": "open_cursor" | "open_parent" | "close" | "toggle_size" | "toggle_permissions" }`（default: `{}`）
   - `open_cursor`: カーソル行を開く。
   - `open_parent`: 親ディレクトリへ移動する。
+  - `close`: Shirube バッファを閉じる。
+  - `toggle_size`: サイズ表示の ON/OFF。
+  - `toggle_permissions`: パーミッション表示の ON/OFF。
 - `keymaps_global`: `{ "<key>": "open_shirube" }`（default: `{}`）
   - `open_shirube`: 現在のバッファ/ディレクトリから Shirube を開く。
 - `sort`: `{ "group": "none" | "directories-first" | "files-first" }`（default: `{ "group": "none" }`）
   - `group`: ディレクトリ/ファイルの並び順を指定する（グループ内は名前順）。
+- `meta`: `{ "size": boolean, "permissions": boolean }`（default: `{ "size": false, "permissions": false }`）
+  - メタ情報（サイズ/パーミッション）の表示を切り替える。
 - `open_on_startup`: boolean（default: `false`）
   - 起動時にディレクトリ引数が1つ指定された場合、Shirube を開く。
 - `log_file`: string（default: `""`）
@@ -32,12 +37,17 @@ let g:shirube = {
       \ "keymaps": {
       \   "<CR>": "open_cursor",
       \   "-": "open_parent",
+      \   "<Esc>": "close",
       \ },
       \ "keymaps_global": {
       \   "-": "open_shirube",
       \ },
       \ "sort": {
       \   "group": "directories-first",
+      \ },
+      \ "meta": {
+      \   "size": v:true,
+      \   "permissions": v:true,
       \ },
       \ "open_on_startup": v:true,
       \ "log_file": "./tmp/nvim",

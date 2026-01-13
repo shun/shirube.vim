@@ -33,7 +33,6 @@ Shirube (標) は Neovim/Vim のバッファ上でファイルシステムをテ
 ### 3.3 外部要件
 - Deno が利用可能
 - denops.vim が利用可能
-- nvim-web-devicons は任意（アイコン表示に利用）
 
 ## 4. スコープ
 
@@ -94,13 +93,16 @@ Shirube (標) は Neovim/Vim のバッファ上でファイルシステムをテ
    - 行フォーマット: `/ID filename` (例: `/1 myfile.txt`)
    - ディレクトリは末尾に `/` を付けて表示する。
    - Conceal: `syntax match ShirubeId /^\/\d*\s/ conceal` を適用する。
-   - Metadata: サイズ/アイコン/パーミッション等は Virtual Text (extmark) で装飾表示する。
+   - Metadata: サイズ/パーミッション等は Virtual Text (extmark) で装飾表示する。
    - ディレクトリ/ファイルで文字色を分ける。
    - Metadata は右寄せで整列表示する。
 5. ナビゲーション:
    - `keymaps` で指定されたキーに応じて動作する（デフォルト無効）。
      - `open_cursor`: カーソル行を開く（ディレクトリ行は移動、ファイル行は開く）。
      - `open_parent`: 親ディレクトリへ移動する。
+     - `close`: Shirube バッファを閉じる。
+     - `toggle_size`: サイズ表示の ON/OFF。
+     - `toggle_permissions`: パーミッション表示の ON/OFF。
    - `keymaps_global` で指定されたキーに応じて Shirube を開く（デフォルト無効）。
      - `open_shirube`: 現在のバッファ/ディレクトリから Shirube を開く。
 
@@ -140,15 +142,16 @@ interface Adapter {
 ```
 
 ### 7.5 互換性と UI
-- Neovim: Floating Window/専用バッファを選択可能。nvim-web-devicons によるリッチな表示。
+- Neovim: Floating Window/専用バッファを選択可能。
 - Vim: Popup/専用バッファを選択可能。denops-std で API 差異を吸収し、必要なら confirm() などで簡易 UI を提供。
 
 ### 7.6 設定
 - `ui_mode`: "float" | "buffer"。確認 UI の表示方式。default: "float"。
 - `skip_confirm`: boolean。確認 UI の表示を省略する。default: false。
-- `keymaps`: `{ "<key>": "open_cursor" | "open_parent" }`。default: `{}`。
+- `keymaps`: `{ "<key>": "open_cursor" | "open_parent" | "close" | "toggle_size" | "toggle_permissions" }`。default: `{}`。
 - `keymaps_global`: `{ "<key>": "open_shirube" }`。default: `{}`。
 - `sort`: `{ "group": "none" | "directories-first" | "files-first" }`。default: `{ "group": "none" }`。
+- `meta`: `{ "size": boolean, "permissions": boolean }`。default: `{ "size": false, "permissions": false }`。
 - `open_on_startup`: boolean。起動時にディレクトリ引数が1つ指定された場合に Shirube を開く。default: false。
 - `log_file`: string。デバッグログの出力先（ファイル/ディレクトリ）。default: ""。
 

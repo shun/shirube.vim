@@ -7,7 +7,6 @@ Shirube (標) は Neovim/Vim のバッファ上でファイルシステムをテ
 - Neovim（優先）または Vim 8.2+
 - Deno
 - denops.vim
-- nvim-web-devicons（任意）
 
 ## インストール
 お使いのプラグインマネージャで `denops.vim` と `shun/shirube.vim` を追加してください。
@@ -42,6 +41,9 @@ Shirube バッファ内のキーマップはデフォルトで無効です。
 - `keymaps`: キーとアクションの対応表
   - `open_cursor`: カーソル行を開く（ディレクトリなら移動、ファイルなら開く）
   - `open_parent`: 親ディレクトリへ移動
+  - `close`: Shirube バッファを閉じる
+  - `toggle_size`: サイズ表示の ON/OFF
+  - `toggle_permissions`: パーミッション表示の ON/OFF
 - `keymaps_global`: グローバルキーマップ（通常バッファで Shirube を開く）
   - `open_shirube`: 現在のバッファ/ディレクトリから Shirube を開く
 
@@ -51,6 +53,7 @@ let g:shirube = {
       \ "keymaps": {
       \   "<CR>": "open_cursor",
       \   "-": "open_parent",
+      \   "<Esc>": "close",
       \ },
       \ "keymaps_global": {
       \   "-": "open_shirube",
@@ -67,12 +70,14 @@ let g:shirube = {
 - `ui_mode`: `"float" | "buffer"`（default: `"float"`）
   - `float`: フローティング UI（Neovim は Floating Window、Vim は Popup）
   - `buffer`: 確認用の専用バッファ
-- `keymaps`: `{ "<key>": "open_cursor" | "open_parent" }`（default: `{}`）
+- `keymaps`: `{ "<key>": "open_cursor" | "open_parent" | "close" | "toggle_size" | "toggle_permissions" }`（default: `{}`）
   - キーは Vim の表記で指定する（例: `<CR>`, `-`, `h`）
 - `keymaps_global`: `{ "<key>": "open_shirube" }`（default: `{}`）
   - グローバルに Shirube を開くキーを指定する
 - `sort`: `{ "group": "none" | "directories-first" | "files-first" }`（default: `{ "group": "none" }`）
   - `group`: ディレクトリ/ファイルの並び順を指定する（グループ内は名前順）
+- `meta`: `{ "size": boolean, "permissions": boolean }`（default: `{ "size": false, "permissions": false }`）
+  - メタ情報（サイズ/パーミッション）の表示を切り替える
 - `open_on_startup`: boolean（default: `false`）
   - 起動時にディレクトリ引数が1つ指定された場合、Shirube を開く
 - `log_file`: string（default: `""`）
@@ -87,12 +92,17 @@ let g:shirube = {
       \ "keymaps": {
       \   "<CR>": "open_cursor",
       \   "-": "open_parent",
+      \   "<Esc>": "close",
       \ },
       \ "keymaps_global": {
       \   "-": "open_shirube",
       \ },
       \ "sort": {
       \   "group": "directories-first",
+      \ },
+      \ "meta": {
+      \   "size": v:true,
+      \   "permissions": v:true,
       \ },
       \ "open_on_startup": v:true,
       \ "log_file": "./tmp/nvim",
