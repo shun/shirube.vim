@@ -12,6 +12,7 @@ export type Config = {
   uiMode: UiMode;
   keymaps: Keymaps;
   keymapsGlobal: GlobalKeymaps;
+  logFile: string;
 };
 
 const defaultConfig: Config = {
@@ -19,6 +20,7 @@ const defaultConfig: Config = {
   uiMode: "float",
   keymaps: {},
   keymapsGlobal: {},
+  logFile: "",
 };
 
 const parseBool = (value: unknown, fallback: boolean): boolean => {
@@ -27,6 +29,13 @@ const parseBool = (value: unknown, fallback: boolean): boolean => {
   }
   if (typeof value === "number") {
     return value !== 0;
+  }
+  return fallback;
+};
+
+const parseString = (value: unknown, fallback: string): string => {
+  if (typeof value === "string") {
+    return value;
   }
   return fallback;
 };
@@ -98,6 +107,7 @@ const normalizeConfig = (value: unknown): Config => {
     uiMode: parseUiMode(raw.ui_mode, defaultConfig.uiMode),
     keymaps,
     keymapsGlobal,
+    logFile: parseString(raw.log_file, defaultConfig.logFile),
   };
 };
 

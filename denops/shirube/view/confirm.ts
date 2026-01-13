@@ -1,5 +1,6 @@
 import type { Denops } from "https://deno.land/x/denops_std@v6/mod.ts";
 import type { UiMode } from "../config.ts";
+import type { Logger } from "../log.ts";
 import type { Action } from "../types.ts";
 
 type ActionKind = "create" | "delete" | "move" | "copy";
@@ -65,9 +66,14 @@ const ensureActionHighlights = async (denops: Denops): Promise<void> => {
   await denops.cmd("highlight default link ShirubeActionCopy DiffText");
 };
 
-const readChoice = async (denops: Denops): Promise<boolean> => {
+const readChoice = async (
+  denops: Denops,
+  logger: Logger,
+): Promise<boolean> => {
   const input = await denops.call("getcharstr") as string;
-  return input.toLowerCase() === "y";
+  await logger.debug("confirm.input", { input });
+  const normalized = input.toLowerCase();
+  return normalized === "y" || input === "\r" || input === "\n";
 };
 
 const applyHighlightsNvim = async (
@@ -105,8 +111,10 @@ const confirmWithBuffer = async (
   denops: Denops,
   lines: string[],
   highlights: Highlight[],
+  logger: Logger,
 ): Promise<boolean> => {
   const winid = await denops.call("win_getid") as number;
+  await logger.debug("confirm.buffer.open", { lineCount: lines.length });
   await denops.cmd("belowright new");
   const bufnr = await denops.call("bufnr", "%") as number;
   await denops.call("setline", 1, lines);
@@ -120,7 +128,9 @@ const confirmWithBuffer = async (
   } else {
     await applyHighlightsVim(denops, highlights);
   }
-  const ok = await readChoice(denops);
+  await denops.cmd("redraw");
+  const ok = await readChoice(denops, logger);
+  await logger.debug("confirm.buffer.choice", { ok });
   await denops.cmd("close");
   await denops.call("win_gotoid", winid);
   return ok;
@@ -130,9 +140,11 @@ const confirmWithFloating = async (
   denops: Denops,
   lines: string[],
   highlights: Highlight[],
+  logger: Logger,
 ): Promise<boolean> => {
   if (!isNvim(denops)) {
     const hasPopup = await denops.call("exists", "*popup_create") as number;
+    await logger.debug("confirm.float.vim", { hasPopup: hasPopup === 1 });
     if (hasPopup) {
       await ensureActionHighlights(denops);
       const popupId = await denops.call("popup_create", lines, {
@@ -141,7 +153,10 @@ const confirmWithFloating = async (
         padding: [0, 1, 0, 1],
         minwidth: 40,
       }) as number;
-      const ok = await readChoice(denops);
+      await logger.debug("confirm.popup.open", { lineCount: lines.length });
+      await denops.cmd("redraw");
+      const ok = await readChoice(denops, logger);
+      await logger.debug("confirm.popup.choice", { ok });
       await denops.call("popup_close", popupId);
       return ok;
     }
@@ -151,6 +166,7 @@ const confirmWithFloating = async (
       "&Yes\n&No",
       2,
     ) as number;
+    await logger.debug("confirm.confirm.choice", { ok: choice === 1 });
     return choice === 1;
   }
 
@@ -172,6 +188,7 @@ const confirmWithFloating = async (
   const row = Math.max(Math.floor((linesCount - height) / 2), 0);
   const col = Math.max(Math.floor((columns - width) / 2), 0);
 
+  await logger.debug("confirm.float.open", { width, height, row, col });
   const win = await denops.call("nvim_open_win", buf, true, {
     relative: "editor",
     row,
@@ -181,7 +198,10 @@ const confirmWithFloating = async (
     style: "minimal",
     border: "single",
   }) as number;
-  const ok = await readChoice(denops);
+  await logger.debug("confirm.float.win", { win });
+  await denops.cmd("redraw");
+  const ok = await readChoice(denops, logger);
+  await logger.debug("confirm.float.choice", { ok });
   await denops.call("nvim_win_close", win, true);
   return ok;
 };
@@ -190,10 +210,18 @@ export const confirmActions = async (
   denops: Denops,
   actions: Action[],
   uiMode: UiMode,
+  logger: Logger,
 ): Promise<boolean> => {
   const { lines, highlights } = buildLines(actions);
+  await logger.debug("confirm.start", {
+    actionCount: actions.length,
+    uiMode,
+    host: denops.meta.host,
+  });
+  const mode = await denops.call("mode") as string;
+  await logger.debug("confirm.context", { mode });
   if (uiMode === "buffer") {
-    return await confirmWithBuffer(denops, lines, highlights);
+    return await confirmWithBuffer(denops, lines, highlights, logger);
   }
-  return await confirmWithFloating(denops, lines, highlights);
+  return await confirmWithFloating(denops, lines, highlights, logger);
 };

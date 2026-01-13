@@ -10,8 +10,9 @@ import {
   type GlobalKeymapAction,
   type KeymapAction,
 } from "./config.ts";
+import { createLogger } from "./log.ts";
 import { createState, getState, setEntries, setState } from "./state.ts";
-import type { BufferState } from "./types.ts";
+import type { Action, BufferState } from "./types.ts";
 import {
   isShirubeUrl,
   normalizeBufnr,
@@ -112,6 +113,15 @@ const ensureModified = async (denops: Denops): Promise<void> => {
   await denops.cmd("setlocal modified");
 };
 
+const summarizeActions = (actions: Action[]): Record<string, unknown>[] => {
+  return actions.map((action) => ({
+    type: action.type,
+    entryType: action.entryType,
+    src: action.src,
+    dest: action.dest,
+  }));
+};
+
 const keymapActions: Record<KeymapAction, string> = {
   open_cursor: "shirube#open_cursor()",
   open_parent: "shirube#open_parent()",
@@ -177,8 +187,14 @@ export async function main(denops: Denops): Promise<void> {
       const resolvedBufnr = normalizeBufnr(bufnr);
       const resolvedUrl = normalizeUrl(url);
       const config = await loadConfig(denops);
+      const logger = createLogger(config);
+      await logger.debug("buf_read.start", {
+        bufnr: resolvedBufnr,
+        url: resolvedUrl,
+      });
       const adapter = resolveAdapter(resolvedUrl);
       const entries = await adapter.listDir(resolvedUrl);
+      await logger.debug("buf_read.entries", { count: entries.length });
       const state = createState(resolvedBufnr, resolvedUrl, adapter);
       const registered = setEntries(state, entries);
       setState(state);
@@ -190,14 +206,32 @@ export async function main(denops: Denops): Promise<void> {
       const resolvedBufnr = normalizeBufnr(bufnr);
       const resolvedUrl = normalizeUrl(url);
       const config = await loadConfig(denops);
+      const logger = createLogger(config);
+      await logger.debug("buf_write.start", {
+        bufnr: resolvedBufnr,
+        url: resolvedUrl,
+        skipConfirm: config.skipConfirm,
+        uiMode: config.uiMode,
+      });
       const state = getState(resolvedBufnr) ??
         createState(resolvedBufnr, resolvedUrl, resolveAdapter(resolvedUrl));
       if (!getState(resolvedBufnr)) {
         setState(state);
       }
       const lines = await denops.call("getline", 1, "$") as string[];
+      await logger.debug("buf_write.lines", { count: lines.length });
       const parsed = parseBuffer(lines, state);
+      await logger.debug("buf_write.parsed", {
+        existing: parsed.existing.size,
+        created: parsed.created.length,
+        errors: parsed.errors,
+      });
       const diff = buildActions(state, parsed);
+      await logger.debug("buf_write.diff", {
+        actionCount: diff.actions.length,
+        errors: diff.errors,
+        actions: summarizeActions(diff.actions),
+      });
       await setBufferVar(
         denops,
         resolvedBufnr,
@@ -212,34 +246,53 @@ export async function main(denops: Denops): Promise<void> {
       );
       await notifyErrors(denops, resolvedBufnr, diff.errors);
       if (diff.errors.length > 0) {
+        await logger.error("buf_write.errors", { errors: diff.errors });
         await ensureModified(denops);
         return;
       }
       if (diff.actions.length === 0) {
+        await logger.debug("buf_write.no_actions");
         await denops.cmd("setlocal nomodified");
         return;
       }
       if (!config.skipConfirm) {
+        await logger.debug("buf_write.confirm.start", {
+          actionCount: diff.actions.length,
+          uiMode: config.uiMode,
+        });
         const confirmed = await confirmActions(
           denops,
           diff.actions,
           config.uiMode,
+          logger,
         );
+        await logger.debug("buf_write.confirm.result", { confirmed });
         if (!confirmed) {
           await ensureModified(denops);
           return;
         }
+      } else {
+        await logger.debug("buf_write.confirm.skipped");
       }
+      await logger.debug("buf_write.execute.start", {
+        actionCount: diff.actions.length,
+      });
       const executed = await executeActions(state.adapter, diff.actions);
       if (!executed.ok) {
         const message = executed.error
           ? `action failed: ${executed.error.message}`
           : "action failed";
+        await logger.error("buf_write.execute.error", {
+          message,
+          action: executed.error?.action,
+        });
         await notifyErrors(denops, resolvedBufnr, [message]);
         await ensureModified(denops);
         return;
       }
+      await logger.debug("buf_write.execute.ok");
       const entries = await state.adapter.listDir(state.url);
+      await logger.debug("buf_write.render.entries", { count: entries.length });
       const registered = setEntries(state, entries);
       setState(state);
       const rendered = renderEntries(registered);
