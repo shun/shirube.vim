@@ -12,7 +12,7 @@ import {
 } from "./config.ts";
 import { createLogger } from "./log.ts";
 import { createState, getState, setEntries, setState } from "./state.ts";
-import type { Action, BufferState } from "./types.ts";
+import type { Action, BufferState, Entry } from "./types.ts";
 import {
   isShirubeUrl,
   normalizeBufnr,
@@ -120,6 +120,36 @@ const summarizeActions = (actions: Action[]): Record<string, unknown>[] => {
     src: action.src,
     dest: action.dest,
   }));
+};
+
+const groupWeight = (
+  entry: Entry,
+  group: Config["sort"]["group"],
+): number => {
+  switch (group) {
+    case "directories-first":
+      return entry.isDirectory ? 0 : 1;
+    case "files-first":
+      return entry.isDirectory ? 1 : 0;
+    default:
+      return 0;
+  }
+};
+
+const sortEntries = (entries: Entry[], config: Config): Entry[] => {
+  if (entries.length <= 1) {
+    return entries;
+  }
+  const sorted = entries.slice();
+  sorted.sort((a, b) => {
+    const group = config.sort.group;
+    const groupDiff = groupWeight(a, group) - groupWeight(b, group);
+    if (groupDiff !== 0) {
+      return groupDiff;
+    }
+    return a.name.localeCompare(b.name);
+  });
+  return sorted;
 };
 
 const keymapActions: Record<KeymapAction, string> = {
@@ -266,9 +296,10 @@ export async function main(denops: Denops): Promise<void> {
       });
       const adapter = resolveAdapter(resolvedUrl);
       const entries = await adapter.listDir(resolvedUrl);
+      const sorted = sortEntries(entries, config);
       await logger.debug("buf_read.entries", { count: entries.length });
       const state = createState(resolvedBufnr, resolvedUrl, adapter);
-      const registered = setEntries(state, entries);
+      const registered = setEntries(state, sorted);
       setState(state);
       const rendered = renderEntries(registered);
       await renderBuffer(denops, resolvedBufnr, rendered);
@@ -364,8 +395,9 @@ export async function main(denops: Denops): Promise<void> {
       }
       await logger.debug("buf_write.execute.ok");
       const entries = await state.adapter.listDir(state.url);
+      const sorted = sortEntries(entries, config);
       await logger.debug("buf_write.render.entries", { count: entries.length });
-      const registered = setEntries(state, entries);
+      const registered = setEntries(state, sorted);
       setState(state);
       const rendered = renderEntries(registered);
       await renderBuffer(denops, resolvedBufnr, rendered);

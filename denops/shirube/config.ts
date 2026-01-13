@@ -6,14 +6,23 @@ export type KeymapAction = "open_cursor" | "open_parent";
 export type Keymaps = Record<string, KeymapAction>;
 export type GlobalKeymapAction = "open_shirube";
 export type GlobalKeymaps = Record<string, GlobalKeymapAction>;
+export type SortGroup = "none" | "directories-first" | "files-first";
+export type SortConfig = {
+  group: SortGroup;
+};
 
 export type Config = {
   skipConfirm: boolean;
   uiMode: UiMode;
   keymaps: Keymaps;
   keymapsGlobal: GlobalKeymaps;
+  sort: SortConfig;
   logFile: string;
   openOnStartup: boolean;
+};
+
+const defaultSort: SortConfig = {
+  group: "none",
 };
 
 const defaultConfig: Config = {
@@ -21,6 +30,7 @@ const defaultConfig: Config = {
   uiMode: "float",
   keymaps: {},
   keymapsGlobal: {},
+  sort: defaultSort,
   logFile: "",
   openOnStartup: false,
 };
@@ -44,6 +54,15 @@ const parseString = (value: unknown, fallback: string): string => {
 
 const parseUiMode = (value: unknown, fallback: UiMode): UiMode => {
   if (value === "float" || value === "buffer") {
+    return value;
+  }
+  return fallback;
+};
+
+const parseSortGroup = (value: unknown, fallback: SortGroup): SortGroup => {
+  if (
+    value === "none" || value === "directories-first" || value === "files-first"
+  ) {
     return value;
   }
   return fallback;
@@ -89,6 +108,16 @@ const parseGlobalKeymaps = (value: unknown): GlobalKeymaps => {
   return keymaps;
 };
 
+const parseSort = (value: unknown): SortConfig => {
+  if (!value || typeof value !== "object") {
+    return defaultSort;
+  }
+  const raw = value as Record<string, unknown>;
+  return {
+    group: parseSortGroup(raw.group, defaultSort.group),
+  };
+};
+
 const normalizeConfig = (value: unknown): Config => {
   const raw = value && typeof value === "object"
     ? value as Record<string, unknown>
@@ -104,11 +133,13 @@ const normalizeConfig = (value: unknown): Config => {
     }
   }
   const keymapsGlobal = parseGlobalKeymaps(raw.keymaps_global);
+  const sort = parseSort(raw.sort);
   return {
     skipConfirm: parseBool(raw.skip_confirm, defaultConfig.skipConfirm),
     uiMode: parseUiMode(raw.ui_mode, defaultConfig.uiMode),
     keymaps,
     keymapsGlobal,
+    sort,
     logFile: parseString(raw.log_file, defaultConfig.logFile),
     openOnStartup: parseBool(
       raw.open_on_startup,

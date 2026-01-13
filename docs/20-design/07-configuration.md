@@ -16,6 +16,8 @@
   - `open_parent`: 親ディレクトリへ移動する。
 - `keymaps_global`: `{ "<key>": "open_shirube" }`（default: `{}`）
   - `open_shirube`: 現在のバッファ/ディレクトリから Shirube を開く。
+- `sort`: `{ "group": "none" | "directories-first" | "files-first" }`（default: `{ "group": "none" }`）
+  - `group`: ディレクトリ/ファイルの並び順を指定する（グループ内は名前順）。
 - `open_on_startup`: boolean（default: `false`）
   - 起動時にディレクトリ引数が1つ指定された場合、Shirube を開く。
 - `log_file`: string（default: `""`）
@@ -33,6 +35,9 @@ let g:shirube = {
       \ },
       \ "keymaps_global": {
       \   "-": "open_shirube",
+      \ },
+      \ "sort": {
+      \   "group": "directories-first",
       \ },
       \ "open_on_startup": v:true,
       \ "log_file": "./tmp/nvim",
