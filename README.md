@@ -32,7 +32,7 @@ call plug#end()
   - 行の編集 → Rename/Move
   - 行の削除 → Delete
 - 変更を反映するには Shirube バッファで `:write` を実行します。
-- `skip_confirm=false` の場合は確認 UI が表示され、`y` で実行、`n` でキャンセルします。
+- `skip_confirm=false` の場合は確認 UI が表示され、`y` または `<CR>` で実行、`n` でキャンセルします。
 
 ## キーマップ（任意、デフォルト無効）
 Shirube バッファ内のキーマップはデフォルトで無効です。  
@@ -70,6 +70,9 @@ let g:shirube = {
   - キーは Vim の表記で指定する（例: `<CR>`, `-`, `h`）
 - `keymaps_global`: `{ "<key>": "open_shirube" }`（default: `{}`）
   - グローバルに Shirube を開くキーを指定する
+- `log_file`: string（default: `""`）
+  - デバッグログの出力先（ファイル/ディレクトリ）
+  - ディレクトリ指定時は `shirube.log` に出力する
 
  例:
 ```vim
@@ -83,12 +86,14 @@ let g:shirube = {
       \ "keymaps_global": {
       \   "-": "open_shirube",
       \ },
+      \ "log_file": "./tmp/nvim",
       \ }
 ```
 
 ## エラー/ログ
 - denops.vim が読み込まれていない場合は `shirube: denops.vim is required` を表示します。
 - エラーは `:messages` と `b:shirube_errors` で確認できます。
+- デバッグログは `log_file` に JSON Lines 形式で追記されます。
 
 ## ドキュメント
 - 要件定義: `docs/10-requirements/requirements.md`

@@ -20,7 +20,7 @@ nvim --headless -u NONE -i NONE -n \
   +"set rtp^=$REPO" \
   +"set rtp+=$REPO/after" \
   +"runtime plugin/shirube.vim" \
-  +"let g:shirube={'skip_confirm':v:true,'ui_mode':'buffer','keymaps':{'<CR>':'open_cursor'},'keymaps_global':{'-':'open_shirube'}}" \
+  +"let g:shirube={'skip_confirm':v:true,'ui_mode':'buffer','keymaps':{'<CR>':'open_cursor'},'keymaps_global':{'-':'open_shirube'},'log_file':'./tmp/nvim'}" \
   +"let v:errors=[]" \
   +"redir => g:shirube_log" \
   +"Shirube $TEST_DIR" \

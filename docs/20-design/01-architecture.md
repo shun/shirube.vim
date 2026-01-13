@@ -13,7 +13,7 @@
 - Adapter: ファイルシステム操作の抽象化（list/rename/move/delete 等）。
 - Renderer: `/ID name` 行とハイライト情報（Virtual Text 等）を生成する。
 - Mutator: バッファ解析、差分検知、Action 生成、実行順序の整理を行う。
-- UI: 確認 UI を表示し、ユーザー入力（y/n）を受け取る。
+- UI: 確認 UI を表示し、ユーザー入力（y/<CR>/n）を受け取る。
 - State: BufferState と Entry のライフサイクル管理を行う。
 
 ## データフロー

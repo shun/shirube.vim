@@ -120,7 +120,7 @@ Shirube (標) は Neovim/Vim のバッファ上でファイルシステムをテ
    - フローティングは Neovim では Floating Window、Vim では Popup を使用する。
    - 専用バッファは確認用の一時バッファとして表示する。
    - Create=緑, Delete=赤, Move=黄
-   - y/n で実行可否を受付
+   - y/<CR>/n で実行可否を受付
 3. `Adapter.performAction(action)` を順次実行する。
 4. エラー時は処理を中断し、失敗アクションと理由を通知する。
 5. 処理完了後、最新状態でバッファを再描画する。
@@ -148,6 +148,7 @@ interface Adapter {
 - `skip_confirm`: boolean。確認 UI の表示を省略する。default: false。
 - `keymaps`: `{ "<key>": "open_cursor" | "open_parent" }`。default: `{}`。
 - `keymaps_global`: `{ "<key>": "open_shirube" }`。default: `{}`。
+- `log_file`: string。デバッグログの出力先（ファイル/ディレクトリ）。default: ""。
 
 ## 8. データ仕様
 
@@ -210,7 +211,7 @@ interface Action {
 2. 各行に ID が埋め込まれ、Conceal によりユーザーには不可視となる。
 3. バッファ編集で Rename/Move/Create/Delete を検知できる。
 4. `:w` 実行時に Action リストが生成される。
-5. `skip_confirm=false` の場合、確認 UI が表示され y/n で実行可否を選べる。
+5. `skip_confirm=false` の場合、確認 UI が表示され y/<CR>/n で実行可否を選べる。
 6. Action を順次実行し、失敗時は原因を通知して中断する。
 7. 処理完了後、最新状態でバッファを再描画する。
 8. UI モードとしてフローティング/専用バッファを設定で切り替えられ、Vim では必要に応じて簡易 UI にフォールバックする。

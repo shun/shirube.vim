@@ -16,6 +16,9 @@
   - `open_parent`: 親ディレクトリへ移動する。
 - `keymaps_global`: `{ "<key>": "open_shirube" }`（default: `{}`）
   - `open_shirube`: 現在のバッファ/ディレクトリから Shirube を開く。
+- `log_file`: string（default: `""`）
+  - デバッグログの出力先（ファイル/ディレクトリ）。
+  - ディレクトリ指定時は `shirube.log` に出力する。
 
 ## 例
 ```vim
@@ -29,5 +32,6 @@ let g:shirube = {
       \ "keymaps_global": {
       \   "-": "open_shirube",
       \ },
+      \ "log_file": "./tmp/nvim",
       \ }
 ```
