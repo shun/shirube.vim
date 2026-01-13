@@ -20,7 +20,7 @@ nvim --headless -u NONE -i NONE -n \
   +"set rtp^=$REPO" \
   +"set rtp+=$REPO/after" \
   +"runtime plugin/shirube.vim" \
-  +"let g:shirube={'skip_confirm':v:true,'ui_mode':'buffer','keymaps':{'<CR>':'open_cursor'},'keymaps_global':{'-':'open_shirube'},'log_file':'./tmp/nvim'}" \
+  +"let g:shirube={'skip_confirm':v:true,'confirm_ui_mode':'buffer','keymaps':{'<CR>':'open_cursor'},'keymaps_global':{'-':'open_shirube'},'log_file':'./tmp/nvim'}" \
   +"let v:errors=[]" \
   +"redir => g:shirube_log" \
   +"Shirube $TEST_DIR" \
@@ -42,5 +42,5 @@ nvim --headless -u NONE -i NONE -n \
 ## 追加検証（実装に合わせて拡充）
 - 変更検知（Create/Move/Rename/Delete）が Action に変換される。
 - `skip_confirm=false` で確認 UI が起動する（`feedkeys('y','n')` で承認を与える）。
-- `ui_mode=float`/`ui_mode=buffer` の切替が反映される。
+- `confirm_ui_mode=float`/`confirm_ui_mode=buffer` の切替が反映される。
 - Action 実行後に再描画される。

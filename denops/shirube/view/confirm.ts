@@ -1,5 +1,5 @@
 import type { Denops } from "https://deno.land/x/denops_std@v6/mod.ts";
-import type { UiMode } from "../config.ts";
+import type { ConfirmUiMode } from "../config.ts";
 import type { Logger } from "../log.ts";
 import type { Action } from "../types.ts";
 
@@ -209,18 +209,18 @@ const confirmWithFloating = async (
 export const confirmActions = async (
   denops: Denops,
   actions: Action[],
-  uiMode: UiMode,
+  confirmUiMode: ConfirmUiMode,
   logger: Logger,
 ): Promise<boolean> => {
   const { lines, highlights } = buildLines(actions);
   await logger.debug("confirm.start", {
     actionCount: actions.length,
-    uiMode,
+    confirmUiMode,
     host: denops.meta.host,
   });
   const mode = await denops.call("mode") as string;
   await logger.debug("confirm.context", { mode });
-  if (uiMode === "buffer") {
+  if (confirmUiMode === "buffer") {
     return await confirmWithBuffer(denops, lines, highlights, logger);
   }
   return await confirmWithFloating(denops, lines, highlights, logger);

@@ -10,7 +10,7 @@
 4. `docs/20-design/04-routing-adapter.md` ルーティング/アダプタ（URL スキーマ、LocalAdapter）
 5. `docs/20-design/05-mutator-diff.md` 変更検知/実行（パーサ、Diff、実行制御）
 6. `docs/20-design/06-error-logging.md` エラー/ログ/回復（失敗時の中断と通知）
-7. `docs/20-design/07-configuration.md` 設定（`skip_confirm`, `ui_mode` ほか）
+7. `docs/20-design/07-configuration.md` 設定（`skip_confirm`, `confirm_ui_mode` ほか）
 
 ## 全体フロー（概要）
 1. `:Shirube` または `shirube://` を検知してバッファを開く。
@@ -20,9 +20,9 @@
 5. `skip_confirm=false` の場合は確認 UI を表示し、承認後に Action を実行する。
 6. 実行後は最新状態で再描画する。
 
-## UI モード（概要）
-- `ui_mode="float"`: Neovim は Floating Window、Vim は Popup を使用する。
-- `ui_mode="buffer"`: 確認用の専用バッファを表示する。
+## 確認 UI モード（概要）
+- `confirm_ui_mode="float"`: Neovim は Floating Window、Vim は Popup を使用する。
+- `confirm_ui_mode="buffer"`: 確認用の専用バッファを表示する。
 - Vim で Popup が使えない場合は confirm() にフォールバックする。
 
 ## 参照

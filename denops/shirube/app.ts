@@ -341,7 +341,7 @@ export async function main(denops: Denops): Promise<void> {
         bufnr: resolvedBufnr,
         url: resolvedUrl,
         skipConfirm: config.skipConfirm,
-        uiMode: config.uiMode,
+        confirmUiMode: config.confirmUiMode,
       });
       const state = getState(resolvedBufnr) ??
         createState(
@@ -393,12 +393,12 @@ export async function main(denops: Denops): Promise<void> {
       if (!config.skipConfirm) {
         await logger.debug("buf_write.confirm.start", {
           actionCount: diff.actions.length,
-          uiMode: config.uiMode,
+          confirmUiMode: config.confirmUiMode,
         });
         const confirmed = await confirmActions(
           denops,
           diff.actions,
-          config.uiMode,
+          config.confirmUiMode,
           logger,
         );
         await logger.debug("buf_write.confirm.result", { confirmed });

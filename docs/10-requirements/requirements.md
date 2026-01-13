@@ -117,8 +117,8 @@ Shirube (標) は Neovim/Vim のバッファ上でファイルシステムをテ
 3. Diff を生成し、Action リストを構築する。
 
 ### 7.3 確認と実行 (Confirmation & Execution)
-1. `skip_confirm: boolean` (default: false) と `ui_mode: "float" | "buffer"` (default: "float") を確認する。
-2. false の場合、ui_mode に応じてフローティングまたは専用バッファに Action リストを色付きで表示する
+1. `skip_confirm: boolean` (default: false) と `confirm_ui_mode: "float" | "buffer"` (default: "float") を確認する。
+2. false の場合、confirm_ui_mode に応じてフローティングまたは専用バッファに Action リストを色付きで表示する
    - フローティングは Neovim では Floating Window、Vim では Popup を使用する。
    - 専用バッファは確認用の一時バッファとして表示する。
    - Create=緑, Delete=赤, Move=黄
@@ -146,7 +146,7 @@ interface Adapter {
 - Vim: Popup/専用バッファを選択可能。denops-std で API 差異を吸収し、必要なら confirm() などで簡易 UI を提供。
 
 ### 7.6 設定
-- `ui_mode`: "float" | "buffer"。確認 UI の表示方式。default: "float"。
+- `confirm_ui_mode`: "float" | "buffer"。確認 UI の表示方式。default: "float"。
 - `skip_confirm`: boolean。確認 UI の表示を省略する。default: false。
 - `keymaps`: `{ "<key>": "open_cursor" | "open_parent" | "close" | "toggle_size" | "toggle_permissions" }`。default: `{}`。
 - `keymaps_global`: `{ "<key>": "open_shirube" }`。default: `{}`。

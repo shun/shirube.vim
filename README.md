@@ -67,9 +67,9 @@ let g:shirube = {
 
 - `skip_confirm`: boolean（default: `false`）
   - true の場合、確認 UI を表示せず Action を実行
-- `ui_mode`: `"float" | "buffer"`（default: `"float"`）
-  - `float`: フローティング UI（Neovim は Floating Window、Vim は Popup）
-  - `buffer`: 確認用の専用バッファ
+- `confirm_ui_mode`: `"float" | "buffer"`（default: `"float"`）
+  - `float`: 確認 UI をフローティング表示（Neovim は Floating Window、Vim は Popup）
+  - `buffer`: 確認 UI を専用バッファで表示
 - `keymaps`: `{ "<key>": "open_cursor" | "open_parent" | "close" | "toggle_size" | "toggle_permissions" }`（default: `{}`）
   - キーは Vim の表記で指定する（例: `<CR>`, `-`, `h`）
 - `keymaps_global`: `{ "<key>": "open_shirube" }`（default: `{}`）
@@ -88,7 +88,7 @@ let g:shirube = {
 ```vim
 let g:shirube = {
       \ "skip_confirm": v:false,
-      \ "ui_mode": "float",
+      \ "confirm_ui_mode": "float",
       \ "keymaps": {
       \   "<CR>": "open_cursor",
       \   "-": "open_parent",

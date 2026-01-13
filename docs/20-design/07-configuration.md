@@ -8,9 +8,9 @@
 ## 設定項目
 - `skip_confirm`: boolean（default: `false`）
   - true の場合、確認 UI を表示せず Action を実行する。
-- `ui_mode`: `"float" | "buffer"`（default: `"float"`）
-  - `float`: フローティング UI を使用する。
-  - `buffer`: 専用バッファ UI を使用する。
+- `confirm_ui_mode`: `"float" | "buffer"`（default: `"float"`）
+  - `float`: 確認 UI をフローティング表示する。
+  - `buffer`: 確認 UI を専用バッファで表示する。
 - `keymaps`: `{ "<key>": "open_cursor" | "open_parent" | "close" | "toggle_size" | "toggle_permissions" }`（default: `{}`）
   - `open_cursor`: カーソル行を開く。
   - `open_parent`: 親ディレクトリへ移動する。
@@ -33,7 +33,7 @@
 ```vim
 let g:shirube = {
       \ "skip_confirm": v:false,
-      \ "ui_mode": "float",
+      \ "confirm_ui_mode": "float",
       \ "keymaps": {
       \   "<CR>": "open_cursor",
       \   "-": "open_parent",

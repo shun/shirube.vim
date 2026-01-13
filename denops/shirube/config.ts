@@ -1,6 +1,6 @@
 import type { Denops } from "https://deno.land/x/denops_std@v6/mod.ts";
 
-export type UiMode = "float" | "buffer";
+export type ConfirmUiMode = "float" | "buffer";
 
 export type KeymapAction =
   | "open_cursor"
@@ -22,7 +22,7 @@ export type MetaConfig = {
 
 export type Config = {
   skipConfirm: boolean;
-  uiMode: UiMode;
+  confirmUiMode: ConfirmUiMode;
   keymaps: Keymaps;
   keymapsGlobal: GlobalKeymaps;
   sort: SortConfig;
@@ -41,7 +41,7 @@ const defaultMeta: MetaConfig = {
 
 const defaultConfig: Config = {
   skipConfirm: false,
-  uiMode: "float",
+  confirmUiMode: "float",
   keymaps: {},
   keymapsGlobal: {},
   sort: defaultSort,
@@ -67,11 +67,24 @@ const parseString = (value: unknown, fallback: string): string => {
   return fallback;
 };
 
-const parseUiMode = (value: unknown, fallback: UiMode): UiMode => {
+const parseConfirmUiMode = (
+  value: unknown,
+  fallback: ConfirmUiMode,
+): ConfirmUiMode => {
   if (value === "float" || value === "buffer") {
     return value;
   }
   return fallback;
+};
+
+const resolveConfirmUiMode = (
+  raw: Record<string, unknown>,
+  fallback: ConfirmUiMode,
+): ConfirmUiMode => {
+  if (Object.prototype.hasOwnProperty.call(raw, "confirm_ui_mode")) {
+    return parseConfirmUiMode(raw.confirm_ui_mode, fallback);
+  }
+  return parseConfirmUiMode(raw.ui_mode, fallback);
 };
 
 const parseSortGroup = (value: unknown, fallback: SortGroup): SortGroup => {
@@ -163,9 +176,10 @@ const normalizeConfig = (value: unknown): Config => {
   const keymapsGlobal = parseGlobalKeymaps(raw.keymaps_global);
   const sort = parseSort(raw.sort);
   const meta = parseMeta(raw.meta);
+  const confirmUiMode = resolveConfirmUiMode(raw, defaultConfig.confirmUiMode);
   return {
     skipConfirm: parseBool(raw.skip_confirm, defaultConfig.skipConfirm),
-    uiMode: parseUiMode(raw.ui_mode, defaultConfig.uiMode),
+    confirmUiMode,
     keymaps,
     keymapsGlobal,
     sort,
