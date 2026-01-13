@@ -1,5 +1,5 @@
 import type { Adapter } from "./adapter/interface.ts";
-import type { BufferState, BufNr, Entry } from "./types.ts";
+import type { BufferState, BufNr, Entry, MetaVisibility } from "./types.ts";
 
 const states = new Map<BufNr, BufferState>();
 
@@ -7,6 +7,7 @@ export const createState = (
   bufnr: BufNr,
   url: string,
   adapter: Adapter,
+  meta: MetaVisibility,
 ): BufferState => {
   return {
     bufnr,
@@ -14,6 +15,7 @@ export const createState = (
     adapter,
     entries: new Map(),
     nextId: 1,
+    meta: { ...meta },
   };
 };
 

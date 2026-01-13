@@ -12,7 +12,7 @@ import {
 } from "./config.ts";
 import { createLogger } from "./log.ts";
 import { createState, getState, setEntries, setState } from "./state.ts";
-import type { Action, BufferState, Entry } from "./types.ts";
+import type { Action, BufferState, Entry, MetaVisibility } from "./types.ts";
 import {
   isShirubeUrl,
   normalizeBufnr,
@@ -122,6 +122,15 @@ const summarizeActions = (actions: Action[]): Record<string, unknown>[] => {
   }));
 };
 
+const renderState = async (
+  denops: Denops,
+  state: BufferState,
+): Promise<void> => {
+  const entries = Array.from(state.entries.values());
+  const rendered = renderEntries(entries, state.meta);
+  await renderBuffer(denops, state.bufnr, rendered);
+};
+
 const groupWeight = (
   entry: Entry,
   group: Config["sort"]["group"],
@@ -152,9 +161,27 @@ const sortEntries = (entries: Entry[], config: Config): Entry[] => {
   return sorted;
 };
 
+const toggleMeta = async (
+  denops: Denops,
+  bufnr: unknown,
+  key: keyof MetaVisibility,
+): Promise<void> => {
+  const resolvedBufnr = normalizeBufnr(bufnr);
+  const state = getState(resolvedBufnr);
+  if (!state) {
+    await notifyErrors(denops, resolvedBufnr, ["state not found"]);
+    return;
+  }
+  state.meta[key] = !state.meta[key];
+  await renderState(denops, state);
+};
+
 const keymapActions: Record<KeymapAction, string> = {
   open_cursor: "shirube#open_cursor()",
   open_parent: "shirube#open_parent()",
+  close: "shirube#close()",
+  toggle_size: "shirube#toggle_size()",
+  toggle_permissions: "shirube#toggle_permissions()",
 };
 
 const globalKeymapActions: Record<GlobalKeymapAction, string> = {
@@ -298,10 +325,10 @@ export async function main(denops: Denops): Promise<void> {
       const entries = await adapter.listDir(resolvedUrl);
       const sorted = sortEntries(entries, config);
       await logger.debug("buf_read.entries", { count: entries.length });
-      const state = createState(resolvedBufnr, resolvedUrl, adapter);
+      const state = createState(resolvedBufnr, resolvedUrl, adapter, config.meta);
       const registered = setEntries(state, sorted);
       setState(state);
-      const rendered = renderEntries(registered);
+      const rendered = renderEntries(registered, state.meta);
       await renderBuffer(denops, resolvedBufnr, rendered);
       await applyKeymaps(denops, config);
     },
@@ -317,7 +344,12 @@ export async function main(denops: Denops): Promise<void> {
         uiMode: config.uiMode,
       });
       const state = getState(resolvedBufnr) ??
-        createState(resolvedBufnr, resolvedUrl, resolveAdapter(resolvedUrl));
+        createState(
+          resolvedBufnr,
+          resolvedUrl,
+          resolveAdapter(resolvedUrl),
+          config.meta,
+        );
       if (!getState(resolvedBufnr)) {
         setState(state);
       }
@@ -399,7 +431,7 @@ export async function main(denops: Denops): Promise<void> {
       await logger.debug("buf_write.render.entries", { count: entries.length });
       const registered = setEntries(state, sorted);
       setState(state);
-      const rendered = renderEntries(registered);
+      const rendered = renderEntries(registered, state.meta);
       await renderBuffer(denops, resolvedBufnr, rendered);
     },
     async open_cursor(bufnr: unknown, line: unknown): Promise<void> {
@@ -428,6 +460,12 @@ export async function main(denops: Denops): Promise<void> {
     },
     async open_from_current(): Promise<void> {
       await openFromCurrent(denops);
+    },
+    async toggle_size(bufnr: unknown): Promise<void> {
+      await toggleMeta(denops, bufnr, "size");
+    },
+    async toggle_permissions(bufnr: unknown): Promise<void> {
+      await toggleMeta(denops, bufnr, "permissions");
     },
   };
   const config = await loadConfig(denops);

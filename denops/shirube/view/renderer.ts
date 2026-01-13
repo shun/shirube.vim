@@ -1,4 +1,4 @@
-import type { Entry } from "../types.ts";
+import type { Entry, MetaVisibility } from "../types.ts";
 
 export type VirtTextChunk = [string, string];
 
@@ -31,10 +31,6 @@ const formatPermissions = (entry: Entry): string => {
   return entry.meta.permissions ?? "-";
 };
 
-const formatIcon = (entry: Entry): string => {
-  return entry.isDirectory ? "[d]" : "[f]";
-};
-
 const formatName = (entry: Entry): string => {
   if (!entry.isDirectory) {
     return entry.name;
@@ -50,14 +46,21 @@ const padRight = (value: string, width: number): string => {
   return value.padEnd(width, " ");
 };
 
-const calculateWidths = (entries: Entry[]): MetaWidths => {
+const calculateWidths = (
+  entries: Entry[],
+  meta: MetaVisibility,
+): MetaWidths => {
   const widths: MetaWidths = { size: 1, permissions: 1 };
   for (const entry of entries) {
-    widths.size = Math.max(widths.size, formatSize(entry).length);
-    widths.permissions = Math.max(
-      widths.permissions,
-      formatPermissions(entry).length,
-    );
+    if (meta.size) {
+      widths.size = Math.max(widths.size, formatSize(entry).length);
+    }
+    if (meta.permissions) {
+      widths.permissions = Math.max(
+        widths.permissions,
+        formatPermissions(entry).length,
+      );
+    }
   }
   return widths;
 };
@@ -65,30 +68,43 @@ const calculateWidths = (entries: Entry[]): MetaWidths => {
 const buildVirtText = (
   entry: Entry,
   widths: MetaWidths,
+  meta: MetaVisibility,
 ): VirtTextChunk[] => {
   const size = padLeft(formatSize(entry), widths.size);
   const permissions = padRight(formatPermissions(entry), widths.permissions);
-  return [
-    [` ${formatIcon(entry)}`, "ShirubeIcon"],
-    [` ${size}`, "ShirubeMeta"],
-    [` ${permissions}`, "ShirubeMeta"],
-  ];
+  const chunks: VirtTextChunk[] = [];
+  if (meta.size) {
+    chunks.push([` ${size}`, "ShirubeMeta"]);
+  }
+  if (meta.permissions) {
+    chunks.push([` ${permissions}`, "ShirubeMeta"]);
+  }
+  return chunks;
 };
 
 const formatLine = (entry: Entry): string => {
   return `/${entry.id} ${formatName(entry)}`;
 };
 
-export const renderEntries = (entries: Entry[]): RenderResult => {
+export const renderEntries = (
+  entries: Entry[],
+  meta: MetaVisibility,
+): RenderResult => {
   if (entries.length === 0) {
     return { lines: [""], virtTexts: [] };
   }
-  const widths = calculateWidths(entries);
+  const showMeta = meta.size || meta.permissions;
+  const widths = showMeta ? calculateWidths(entries, meta) : {
+    size: 1,
+    permissions: 1,
+  };
   return {
     lines: entries.map(formatLine),
-    virtTexts: entries.map((entry, index) => ({
-      line: index,
-      chunks: buildVirtText(entry, widths),
-    })),
+    virtTexts: showMeta
+      ? entries.map((entry, index) => ({
+        line: index,
+        chunks: buildVirtText(entry, widths, meta),
+      }))
+      : [],
   };
 };

@@ -2,13 +2,22 @@ import type { Denops } from "https://deno.land/x/denops_std@v6/mod.ts";
 
 export type UiMode = "float" | "buffer";
 
-export type KeymapAction = "open_cursor" | "open_parent";
+export type KeymapAction =
+  | "open_cursor"
+  | "open_parent"
+  | "close"
+  | "toggle_size"
+  | "toggle_permissions";
 export type Keymaps = Record<string, KeymapAction>;
 export type GlobalKeymapAction = "open_shirube";
 export type GlobalKeymaps = Record<string, GlobalKeymapAction>;
 export type SortGroup = "none" | "directories-first" | "files-first";
 export type SortConfig = {
   group: SortGroup;
+};
+export type MetaConfig = {
+  size: boolean;
+  permissions: boolean;
 };
 
 export type Config = {
@@ -17,12 +26,17 @@ export type Config = {
   keymaps: Keymaps;
   keymapsGlobal: GlobalKeymaps;
   sort: SortConfig;
+  meta: MetaConfig;
   logFile: string;
   openOnStartup: boolean;
 };
 
 const defaultSort: SortConfig = {
   group: "none",
+};
+const defaultMeta: MetaConfig = {
+  size: false,
+  permissions: false,
 };
 
 const defaultConfig: Config = {
@@ -31,6 +45,7 @@ const defaultConfig: Config = {
   keymaps: {},
   keymapsGlobal: {},
   sort: defaultSort,
+  meta: defaultMeta,
   logFile: "",
   openOnStartup: false,
 };
@@ -69,7 +84,9 @@ const parseSortGroup = (value: unknown, fallback: SortGroup): SortGroup => {
 };
 
 const isKeymapAction = (value: unknown): value is KeymapAction => {
-  return value === "open_cursor" || value === "open_parent";
+  return value === "open_cursor" || value === "open_parent" ||
+    value === "close" || value === "toggle_size" ||
+    value === "toggle_permissions";
 };
 
 const isGlobalKeymapAction = (
@@ -118,6 +135,17 @@ const parseSort = (value: unknown): SortConfig => {
   };
 };
 
+const parseMeta = (value: unknown): MetaConfig => {
+  if (!value || typeof value !== "object") {
+    return defaultMeta;
+  }
+  const raw = value as Record<string, unknown>;
+  return {
+    size: parseBool(raw.size, defaultMeta.size),
+    permissions: parseBool(raw.permissions, defaultMeta.permissions),
+  };
+};
+
 const normalizeConfig = (value: unknown): Config => {
   const raw = value && typeof value === "object"
     ? value as Record<string, unknown>
@@ -134,12 +162,14 @@ const normalizeConfig = (value: unknown): Config => {
   }
   const keymapsGlobal = parseGlobalKeymaps(raw.keymaps_global);
   const sort = parseSort(raw.sort);
+  const meta = parseMeta(raw.meta);
   return {
     skipConfirm: parseBool(raw.skip_confirm, defaultConfig.skipConfirm),
     uiMode: parseUiMode(raw.ui_mode, defaultConfig.uiMode),
     keymaps,
     keymapsGlobal,
     sort,
+    meta,
     logFile: parseString(raw.log_file, defaultConfig.logFile),
     openOnStartup: parseBool(
       raw.open_on_startup,

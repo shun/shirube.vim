@@ -22,6 +22,14 @@ function! shirube#open_cursor() abort
   call shirube#_request('open_cursor', [bufnr('%'), getline('.')])
 endfunction
 
+function! shirube#toggle_size() abort
+  call shirube#_request('toggle_size', [bufnr('%')])
+endfunction
+
+function! shirube#toggle_permissions() abort
+  call shirube#_request('toggle_permissions', [bufnr('%')])
+endfunction
+
 function! shirube#open_from_current() abort
   call shirube#_request('open_from_current', [])
 endfunction
@@ -40,6 +48,13 @@ function! shirube#open_parent() abort
     let l:parent = '/'
   endif
   call shirube#open(l:parent)
+endfunction
+
+function! shirube#close() abort
+  if &filetype !=# 'shirube'
+    return
+  endif
+  execute 'bdelete'
 endfunction
 
 function! shirube#_request(method, params) abort
