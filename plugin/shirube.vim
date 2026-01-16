@@ -9,5 +9,9 @@ augroup shirube
   autocmd!
   autocmd VimEnter * call shirube#on_vim_enter()
   autocmd BufReadCmd shirube://* call shirube#on_buf_read()
+  autocmd BufEnter shirube://* call shirube#_init_window()
+  autocmd BufWinEnter shirube://* call shirube#_init_window()
+  autocmd WinEnter shirube://* call shirube#_init_window()
+  autocmd BufLeave shirube://* call shirube#_clear_conceal_match()
   autocmd BufWriteCmd shirube://* call shirube#on_buf_write()
 augroup END
