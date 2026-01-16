@@ -39,3 +39,31 @@ export const pathToUrl = (path: string): string => {
   }
   return `${URL_PREFIX}${path}`;
 };
+
+export const generateCopyName = (
+  originalPath: string,
+  existingPaths: Set<string>,
+): string => {
+  const isDir = originalPath.endsWith("/");
+  const basePath = isDir ? originalPath.slice(0, -1) : originalPath;
+  const lastDot = basePath.lastIndexOf(".");
+  const lastSlash = basePath.lastIndexOf("/");
+  const hasExt = lastDot > lastSlash && lastDot > 0;
+  const base = hasExt ? basePath.slice(0, lastDot) : basePath;
+  const ext = hasExt ? basePath.slice(lastDot) : "";
+  const suffix = isDir ? "/" : "";
+
+  let candidate = `${base}_copy${ext}${suffix}`;
+  if (!existingPaths.has(candidate)) {
+    return candidate;
+  }
+
+  let n = 2;
+  while (true) {
+    candidate = `${base}_copy_${n}${ext}${suffix}`;
+    if (!existingPaths.has(candidate)) {
+      return candidate;
+    }
+    n++;
+  }
+};
