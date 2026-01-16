@@ -32,15 +32,6 @@ const resolveAdapter = (url: string): Adapter => {
   throw new Error(`unsupported url: ${url}`);
 };
 
-const setBufferVar = async (
-  denops: Denops,
-  bufnr: number,
-  name: string,
-  value: unknown,
-): Promise<void> => {
-  await denops.call("setbufvar", bufnr, name, value);
-};
-
 const openTarget = async (
   denops: Denops,
   path: string,
@@ -107,7 +98,6 @@ const notifyErrors = async (
   if (errors.length === 0) {
     return;
   }
-  await setBufferVar(denops, bufnr, "shirube_errors", errors);
   await denops.cmd(`echoerr ${JSON.stringify(`shirube: ${errors[0]}`)}`);
 };
 
@@ -369,18 +359,6 @@ export async function main(denops: Denops): Promise<void> {
         errors: diff.errors,
         actions: summarizeActions(diff.actions),
       });
-      await setBufferVar(
-        denops,
-        resolvedBufnr,
-        "shirube_actions",
-        diff.actions,
-      );
-      await setBufferVar(
-        denops,
-        resolvedBufnr,
-        "shirube_errors",
-        diff.errors,
-      );
       await notifyErrors(denops, resolvedBufnr, diff.errors);
       if (diff.errors.length > 0) {
         await logger.error("buf_write.errors", { errors: diff.errors });
@@ -447,17 +425,10 @@ export async function main(denops: Denops): Promise<void> {
       const result = resolveOpenTarget(state, lineText);
       if (result.target === null) {
         if (result.errors.length > 0) {
-          await setBufferVar(
-            denops,
-            resolvedBufnr,
-            "shirube_errors",
-            result.errors,
-          );
           await notifyErrors(denops, resolvedBufnr, result.errors);
         }
         return;
       }
-      await setBufferVar(denops, resolvedBufnr, "shirube_errors", []);
       await openTarget(denops, result.target.path, result.target.entryType);
     },
     async open_from_current(): Promise<void> {
