@@ -79,6 +79,12 @@ function! shirube#_init_buffer() abort
   setlocal modifiable
   setlocal filetype=shirube
   call shirube#_init_window()
+  augroup ShirubeConstrainCursor
+    autocmd! * <buffer>
+    autocmd InsertEnter <buffer> call timer_start(0, {-> shirube#constrain_cursor()})
+    autocmd CursorMoved <buffer> call shirube#constrain_cursor()
+    autocmd CursorMovedI <buffer> call shirube#constrain_cursor()
+  augroup END
 endfunction
 
 function! shirube#_init_window() abort
@@ -98,4 +104,14 @@ function! shirube#_clear_conceal_match() abort
     silent! call matchdelete(w:shirube_id_conceal_match)
     unlet w:shirube_id_conceal_match
   endif
+endfunction
+
+function! shirube#constrain_cursor() abort
+  if !exists('g:loaded_denops')
+    return
+  endif
+  if &filetype !=# 'shirube'
+    return
+  endif
+  call denops#request('shirube', 'constrain_cursor', [])
 endfunction
