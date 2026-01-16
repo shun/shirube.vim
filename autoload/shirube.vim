@@ -115,3 +115,8 @@ function! shirube#constrain_cursor() abort
   endif
   call denops#request('shirube', 'constrain_cursor', [])
 endfunction
+
+function! shirube#paste() abort
+  normal! p
+  call shirube#_request('auto_rename_paste', [bufnr('%'), line('.')])
+endfunction
