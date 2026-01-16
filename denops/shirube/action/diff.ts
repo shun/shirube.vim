@@ -17,14 +17,17 @@ const sortWeight = (action: Action): number => {
   if (action.type === "move") {
     return 1;
   }
-  if (action.type === "create") {
+  if (action.type === "copy") {
     return 2;
   }
-  if (action.type === "delete" && action.entryType === "file") {
+  if (action.type === "create") {
     return 3;
   }
-  if (action.type === "delete" && action.entryType === "directory") {
+  if (action.type === "delete" && action.entryType === "file") {
     return 4;
+  }
+  if (action.type === "delete" && action.entryType === "directory") {
+    return 5;
   }
   return 9;
 };
@@ -59,6 +62,22 @@ export const buildActions = (
     }
   }
 
+  for (const [id, dests] of parsed.duplicated) {
+    const entry = state.entries.get(id);
+    if (!entry) {
+      errors.push(`unknown id: ${id}`);
+      continue;
+    }
+    for (const dest of dests) {
+      actions.push({
+        type: "copy",
+        entryType: entryTypeFromEntry(entry),
+        src: entry.path,
+        dest,
+      });
+    }
+  }
+
   for (const create of parsed.created) {
     actions.push({
       type: "create",
@@ -68,7 +87,7 @@ export const buildActions = (
   }
 
   for (const [id, entry] of state.entries) {
-    if (!parsed.existing.has(id)) {
+    if (!parsed.existing.has(id) && !parsed.duplicated.has(id)) {
       actions.push({
         type: "delete",
         entryType: entryTypeFromEntry(entry),
