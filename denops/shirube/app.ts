@@ -467,6 +467,25 @@ export async function main(denops: Denops): Promise<void> {
     async toggle_permissions(bufnr: unknown): Promise<void> {
       await toggleMeta(denops, bufnr, "permissions");
     },
+    async constrain_cursor(): Promise<void> {
+      const bufnr = await denops.call("bufnr", "%") as number;
+      const filetype = await denops.call("getbufvar", bufnr, "&filetype") as string;
+      if (filetype !== "shirube") {
+        return;
+      }
+      const cursor = await denops.call("getcurpos") as number[];
+      const lnum = cursor[1];
+      const col = cursor[2];
+      const line = await denops.call("getline", lnum) as string;
+      const match = line.match(/^\/(\d+) /);
+      if (!match) {
+        return;
+      }
+      const minCol = match[0].length + 1;
+      if (col < minCol) {
+        await denops.call("cursor", lnum, minCol);
+      }
+    },
   };
   const config = await loadConfig(denops);
   await applyGlobalKeymaps(denops, config);
