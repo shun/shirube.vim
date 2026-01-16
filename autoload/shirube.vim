@@ -77,8 +77,25 @@ function! shirube#_init_buffer() abort
   setlocal bufhidden=hide
   setlocal noswapfile
   setlocal modifiable
-  setlocal nowrap
   setlocal filetype=shirube
-  setlocal conceallevel=2
+  call shirube#_init_window()
+endfunction
+
+function! shirube#_init_window() abort
+  setlocal nowrap
+  setlocal conceallevel=3
   setlocal concealcursor=nvic
+  call shirube#_apply_conceal_match()
+endfunction
+
+function! shirube#_apply_conceal_match() abort
+  call shirube#_clear_conceal_match()
+  let w:shirube_id_conceal_match = matchadd('Conceal', '^\/\d\+ ')
+endfunction
+
+function! shirube#_clear_conceal_match() abort
+  if exists('w:shirube_id_conceal_match')
+    silent! call matchdelete(w:shirube_id_conceal_match)
+    unlet w:shirube_id_conceal_match
+  endif
 endfunction
