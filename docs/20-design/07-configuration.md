@@ -23,8 +23,6 @@
   - `group`: ディレクトリ/ファイルの並び順を指定する（グループ内は名前順）。
 - `meta`: `{ "size": boolean, "permissions": boolean }`（default: `{ "size": false, "permissions": false }`）
   - メタ情報（サイズ/パーミッション）の表示を切り替える。
-- `open_on_startup`: boolean（default: `false`）
-  - 起動時にディレクトリ引数が1つ指定された場合、Shirube を開く。
 - `log_file`: string（default: `""`）
   - デバッグログの出力先（ファイル/ディレクトリ）。
   - ディレクトリ指定時は `shirube.log` に出力する。
@@ -49,7 +47,6 @@ let g:shirube = {
       \   "size": v:true,
       \   "permissions": v:true,
       \ },
-      \ "open_on_startup": v:true,
       \ "log_file": "./tmp/nvim",
       \ }
 ```

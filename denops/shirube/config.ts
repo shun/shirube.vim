@@ -28,7 +28,6 @@ export type Config = {
   sort: SortConfig;
   meta: MetaConfig;
   logFile: string;
-  openOnStartup: boolean;
 };
 
 const defaultSort: SortConfig = {
@@ -47,7 +46,6 @@ const defaultConfig: Config = {
   sort: defaultSort,
   meta: defaultMeta,
   logFile: "",
-  openOnStartup: false,
 };
 
 const parseBool = (value: unknown, fallback: boolean): boolean => {
@@ -168,10 +166,6 @@ const normalizeConfig = (value: unknown): Config => {
     sort,
     meta,
     logFile: parseString(raw.log_file, defaultConfig.logFile),
-    openOnStartup: parseBool(
-      raw.open_on_startup,
-      defaultConfig.openOnStartup,
-    ),
   };
 };
 

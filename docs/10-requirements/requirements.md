@@ -44,6 +44,7 @@ Shirube (標) は Neovim/Vim のバッファ上でファイルシステムをテ
 - 反映後の再描画
 - Neovim/Vim の UI 差異を吸収した実装
 - `p` キーによる行コピーと自動リネーム機能
+- 起動時にディレクトリ引数が指定された場合の自動起動
 
 ### 4.2 アウトスコープ (v1)
 - SSH/S3 などのリモートアダプター
@@ -158,7 +159,6 @@ interface Adapter {
 - `keymaps_global`: `{ "<key>": "open_shirube" }`。default: `{}`。
 - `sort`: `{ "group": "none" | "directories-first" | "files-first" }`。default: `{ "group": "none" }`。
 - `meta`: `{ "size": boolean, "permissions": boolean }`。default: `{ "size": false, "permissions": false }`。
-- `open_on_startup`: boolean。起動時にディレクトリ引数が1つ指定された場合に Shirube を開く。default: false。
 - `log_file`: string。デバッグログの出力先（ファイル/ディレクトリ）。default: ""。
 
 ## 8. データ仕様

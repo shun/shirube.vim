@@ -7,7 +7,7 @@ command! -nargs=? -complete=dir Shirube call shirube#open(<q-args>)
 
 augroup shirube
   autocmd!
-  autocmd VimEnter * call shirube#on_vim_enter()
+  autocmd VimEnter * call shirube#check_startup()
   autocmd BufReadCmd shirube://* call shirube#on_buf_read()
   autocmd BufEnter shirube://* call shirube#_init_window()
   autocmd BufWinEnter shirube://* call shirube#_init_window()

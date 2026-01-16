@@ -10,8 +10,21 @@ function! shirube#on_buf_read() abort
   call shirube#_request('on_buf_read', [bufnr('%'), bufname('%')])
 endfunction
 
-function! shirube#on_vim_enter() abort
-  call shirube#_request('on_vim_enter', [])
+function! shirube#check_startup() abort
+  if argc() != 1
+    return
+  endif
+  let l:arg = argv(0)
+  if empty(l:arg)
+    return
+  endif
+  if !isdirectory(l:arg)
+    return
+  endif
+  if bufname('%') =~# '^shirube://'
+    return
+  endif
+  call timer_start(0, {-> shirube#open(l:arg)})
 endfunction
 
 function! shirube#on_buf_write() abort
