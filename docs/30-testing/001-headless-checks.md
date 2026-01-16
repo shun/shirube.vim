@@ -40,7 +40,13 @@ nvim --headless -u NONE -i NONE -n \
 - `keymaps_global` に `"-": "open_shirube"` を設定したとき、通常バッファで `-` を押すと Shirube を開く。
 
 ## 追加検証（実装に合わせて拡充）
-- 変更検知（Create/Move/Rename/Delete）が Action に変換される。
+- 変更検知（Create/Move/Rename/Delete/Copy）が Action に変換される。
 - `skip_confirm=false` で確認 UI が起動する（`feedkeys('y','n')` で承認を与える）。
 - `confirm_ui_mode=float`/`confirm_ui_mode=buffer` の切替が反映される。
 - Action 実行後に再描画される。
+- Copy 機能:
+  - `yy` → `p` で行がコピーされる。
+  - 自動リネームが実行される（`_copy` サフィックスが付与される）。
+  - `:w` で Copy アクションが実行される。
+  - ファイルが実際にコピーされる。
+  - ディレクトリも同様にコピーされる。

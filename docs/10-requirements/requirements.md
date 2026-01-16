@@ -39,10 +39,11 @@ Shirube (標) は Neovim/Vim のバッファ上でファイルシステムをテ
 ### 4.1 インスコープ (v1)
 - LocalAdapter によるローカルファイルシステム操作
 - ディレクトリ一覧の取得とバッファ描画
-- バッファ編集による Create/Move/Rename/Delete
+- バッファ編集による Create/Move/Rename/Delete/Copy
 - 変更検知 (Diff) と確認 UI
 - 反映後の再描画
 - Neovim/Vim の UI 差異を吸収した実装
+- `p` キーによる行コピーと自動リネーム機能
 
 ### 4.2 アウトスコープ (v1)
 - SSH/S3 などのリモートアダプター
@@ -109,12 +110,17 @@ Shirube (標) は Neovim/Vim のバッファ上でファイルシステムをテ
 ### 7.2 編集と変更検知 (The Mutator)
 1. バッファ全行を解析する。
    - ID あり: 元のパスと比較し、不一致なら Move/Rename。
+   - 同じ ID が複数行: 2行目以降を Copy として解釈。
    - ID なし: 新規作成行として Create。
    - 欠落 ID: BufferState にのみ存在する ID は Delete。
 2. バリデーション:
    - 同名ファイルの存在チェック。
    - パスの正規化（`../` や `./` の解決）。
 3. Diff を生成し、Action リストを構築する。
+4. Copy 機能:
+   - `p` キーで行を貼り付けると、自動的に `_copy` サフィックスが付与される。
+   - 既存ファイルと重複する場合は `_copy_2`, `_copy_3` ... と連番を増やす。
+   - ディレクトリも同様に Copy 可能。
 
 ### 7.3 確認と実行 (Confirmation & Execution)
 1. `skip_confirm: boolean` (default: false) と `confirm_ui_mode: "float" | "buffer"` (default: "float") を確認する。
@@ -214,7 +220,7 @@ interface Action {
 
 1. shirube:// またはディレクトリオープンで一覧を表示できる。
 2. 各行に ID が埋め込まれ、Conceal によりユーザーには不可視となる。
-3. バッファ編集で Rename/Move/Create/Delete を検知できる。
+3. バッファ編集で Rename/Move/Create/Delete/Copy を検知できる。
 4. `:w` 実行時に Action リストが生成される。
 5. `skip_confirm=false` の場合、確認 UI が表示され y/<CR>/n で実行可否を選べる。
 6. Action を順次実行し、失敗時は原因を通知して中断する。
@@ -222,6 +228,7 @@ interface Action {
 8. UI モードとしてフローティング/専用バッファを設定で切り替えられ、Vim では必要に応じて簡易 UI にフォールバックする。
 9. LocalAdapter でローカルファイルの操作が可能である。
 10. Adapter インターフェースに従った拡張が可能である。
+11. `yy` → `p` で行をコピーすると、自動的にリネームされ、`:w` で Copy アクションが実行される。
 
 ## 11. 付録: ディレクトリ構成
 
