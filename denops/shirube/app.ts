@@ -1,3 +1,4 @@
+import { dirname, join } from "https://deno.land/std@0.224.0/path/mod.ts";
 import type { Denops } from "https://deno.land/x/denops_std@v6/mod.ts";
 import type { Adapter } from "./adapter/interface.ts";
 import { createLocalAdapter } from "./adapter/local.ts";
@@ -14,6 +15,7 @@ import { createLogger } from "./log.ts";
 import { createState, getState, setEntries, setState } from "./state.ts";
 import type { Action, BufferState, Entry, MetaVisibility } from "./types.ts";
 import {
+  generateCopyName,
   isShirubeUrl,
   normalizeBufnr,
   normalizeUrl,
@@ -484,6 +486,70 @@ export async function main(denops: Denops): Promise<void> {
       const minCol = match[0].length + 1;
       if (col < minCol) {
         await denops.call("cursor", lnum, minCol);
+      }
+    },
+    async auto_rename_paste(bufnr: unknown, lnum: unknown): Promise<void> {
+      const resolvedBufnr = normalizeBufnr(bufnr);
+      const lineNum = Number(lnum);
+      if (!Number.isInteger(lineNum) || lineNum <= 0) {
+        return;
+      }
+      const config = await loadConfig(denops);
+      const logger = createLogger(config);
+      const state = getState(resolvedBufnr);
+      if (!state) {
+        await logger.debug("auto_rename_paste.no_state", { bufnr: resolvedBufnr });
+        return;
+      }
+      const line = await denops.call("getline", lineNum) as string;
+      const match = line.match(/^\/(\d+) /);
+      if (!match) {
+        await logger.debug("auto_rename_paste.no_id", { line });
+        return;
+      }
+      const id = Number(match[1]);
+      const lines = await denops.call("getline", 1, "$") as string[];
+      const sameIdLines: number[] = [];
+      for (let i = 0; i < lines.length; i++) {
+        const m = lines[i].match(/^\/(\d+) /);
+        if (m && Number(m[1]) === id) {
+          sameIdLines.push(i + 1);
+        }
+      }
+      if (sameIdLines.length <= 1) {
+        await logger.debug("auto_rename_paste.single", { id });
+        return;
+      }
+      const entry = state.entries.get(id);
+      if (!entry) {
+        await logger.debug("auto_rename_paste.unknown_id", { id });
+        return;
+      }
+      const basePath = urlToPath(state.url);
+      const existingPaths = new Set<string>();
+      for (const entry of state.entries.values()) {
+        existingPaths.add(entry.path);
+      }
+      try {
+        for await (const item of Deno.readDir(basePath)) {
+          const itemPath = join(basePath, item.name);
+          existingPaths.add(itemPath);
+        }
+      } catch {
+        // Ignore readDir errors
+      }
+      for (let i = 1; i < sameIdLines.length; i++) {
+        const targetLine = sameIdLines[i];
+        const newPath = generateCopyName(entry.path, existingPaths);
+        existingPaths.add(newPath);
+        const newName = newPath.slice(basePath.length + 1);
+        const newLine = `/${id} ${newName}`;
+        await denops.call("setline", targetLine, newLine);
+        await logger.debug("auto_rename_paste.renamed", {
+          line: targetLine,
+          oldName: entry.name,
+          newName,
+        });
       }
     },
   };
