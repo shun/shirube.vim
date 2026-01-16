@@ -180,10 +180,8 @@ const confirmWithFloating = async (
 
   const columns = await denops.call("nvim_get_option", "columns") as number;
   const linesCount = await denops.call("nvim_get_option", "lines") as number;
-  const width = Math.min(
-    Math.max(...lines.map((line) => line.length), 20) + 2,
-    columns - 4,
-  );
+  const maxWidth = Math.min(Math.floor(columns * 0.8), 120);
+  const width = Math.max(Math.min(maxWidth, columns - 4), 40);
   const height = Math.min(lines.length + 2, linesCount - 4);
   const row = Math.max(Math.floor((linesCount - height) / 2), 0);
   const col = Math.max(Math.floor((columns - width) / 2), 0);
@@ -198,6 +196,7 @@ const confirmWithFloating = async (
     style: "minimal",
     border: "single",
   }) as number;
+  await denops.call("nvim_win_set_option", win, "wrap", true);
   await logger.debug("confirm.float.win", { win });
   await denops.cmd("redraw");
   const ok = await readChoice(denops, logger);

@@ -27,10 +27,6 @@ export const getState = (bufnr: BufNr): BufferState | undefined => {
   return states.get(bufnr);
 };
 
-export const clearState = (bufnr: BufNr): void => {
-  states.delete(bufnr);
-};
-
 export const setEntries = (state: BufferState, entries: Entry[]): Entry[] => {
   state.entries.clear();
   state.nextId = 1;

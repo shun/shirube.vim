@@ -77,15 +77,7 @@ const parseConfirmUiMode = (
   return fallback;
 };
 
-const resolveConfirmUiMode = (
-  raw: Record<string, unknown>,
-  fallback: ConfirmUiMode,
-): ConfirmUiMode => {
-  if (Object.prototype.hasOwnProperty.call(raw, "confirm_ui_mode")) {
-    return parseConfirmUiMode(raw.confirm_ui_mode, fallback);
-  }
-  return parseConfirmUiMode(raw.ui_mode, fallback);
-};
+
 
 const parseSortGroup = (value: unknown, fallback: SortGroup): SortGroup => {
   if (
@@ -163,20 +155,11 @@ const normalizeConfig = (value: unknown): Config => {
   const raw = value && typeof value === "object"
     ? value as Record<string, unknown>
     : {};
-  const hasKeymaps = Object.prototype.hasOwnProperty.call(raw, "keymaps");
-  const keymaps = hasKeymaps ? parseKeymaps(raw.keymaps) : {};
-  if (!hasKeymaps) {
-    if (parseBool(raw.keymap_enter, false)) {
-      keymaps["<CR>"] = "open_cursor";
-    }
-    if (parseBool(raw.keymap_parent, false)) {
-      keymaps["-"] = "open_parent";
-    }
-  }
+  const keymaps = parseKeymaps(raw.keymaps);
   const keymapsGlobal = parseGlobalKeymaps(raw.keymaps_global);
   const sort = parseSort(raw.sort);
   const meta = parseMeta(raw.meta);
-  const confirmUiMode = resolveConfirmUiMode(raw, defaultConfig.confirmUiMode);
+  const confirmUiMode = parseConfirmUiMode(raw.confirm_ui_mode, defaultConfig.confirmUiMode);
   return {
     skipConfirm: parseBool(raw.skip_confirm, defaultConfig.skipConfirm),
     confirmUiMode,
