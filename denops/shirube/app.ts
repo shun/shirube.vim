@@ -1,26 +1,15 @@
-import { dirname, join } from "https://deno.land/std@0.224.0/path/mod.ts";
+import { join } from "https://deno.land/std@0.224.0/path/mod.ts";
 import type { Denops } from "https://deno.land/x/denops_std@v6/mod.ts";
 import type { Adapter } from "./adapter/interface.ts";
 import { createLocalAdapter } from "./adapter/local.ts";
 import { buildActions } from "./action/diff.ts";
 import { executeActions } from "./action/executor.ts";
 import { parseBuffer } from "./action/parser.ts";
-import {
-  loadConfig,
-  type Config,
-  type GlobalKeymapAction,
-  type KeymapAction,
-} from "./config.ts";
+import { type Config, type GlobalKeymapAction, type KeymapAction, loadConfig } from "./config.ts";
 import { createLogger } from "./log.ts";
 import { createState, getState, setEntries, setState } from "./state.ts";
 import type { Action, BufferState, Entry, MetaVisibility } from "./types.ts";
-import {
-  generateCopyName,
-  isShirubeUrl,
-  normalizeBufnr,
-  normalizeUrl,
-  urlToPath,
-} from "./util.ts";
+import { generateCopyName, isShirubeUrl, normalizeBufnr, normalizeUrl, urlToPath } from "./util.ts";
 import { confirmActions } from "./view/confirm.ts";
 import { renderEntries } from "./view/renderer.ts";
 import { renderBuffer } from "./view/window.ts";
@@ -92,7 +81,7 @@ const resolveOpenTarget = (
 
 const notifyErrors = async (
   denops: Denops,
-  bufnr: number,
+  _bufnr: number,
   errors: string[],
 ): Promise<void> => {
   if (errors.length === 0) {

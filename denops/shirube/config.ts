@@ -75,8 +75,6 @@ const parseConfirmUiMode = (
   return fallback;
 };
 
-
-
 const parseSortGroup = (value: unknown, fallback: SortGroup): SortGroup => {
   if (
     value === "none" || value === "directories-first" || value === "files-first"
@@ -150,9 +148,7 @@ const parseMeta = (value: unknown): MetaConfig => {
 };
 
 const normalizeConfig = (value: unknown): Config => {
-  const raw = value && typeof value === "object"
-    ? value as Record<string, unknown>
-    : {};
+  const raw = value && typeof value === "object" ? value as Record<string, unknown> : {};
   const keymaps = parseKeymaps(raw.keymaps);
   const keymapsGlobal = parseGlobalKeymaps(raw.keymaps_global);
   const sort = parseSort(raw.sort);
