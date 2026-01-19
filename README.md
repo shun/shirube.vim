@@ -24,6 +24,7 @@ call plug#end()
 - `:Shirube {dir}` で任意のディレクトリを開く
 - `:edit shirube://<path>` でも開けます
 - `nvim {dir}` でディレクトリを引数にして起動すると自動で Shirube を開く
+- `:ShirubeReload` で現在のディレクトリを再読み込み
 
 ## 使い方（基本）
 - バッファを直接編集して変更を表現します。
@@ -44,6 +45,7 @@ Shirube バッファ内のキーマップはデフォルトで無効です。
   - `close`: Shirube バッファを閉じる
   - `toggle_size`: サイズ表示の ON/OFF
   - `toggle_permissions`: パーミッション表示の ON/OFF
+  - `reload`: ディレクトリを再読み込み
 - `keymaps_global`: グローバルキーマップ（通常バッファで Shirube を開く）
   - `open_shirube`: 現在のバッファ/ディレクトリから Shirube を開く
 
@@ -70,7 +72,7 @@ let g:shirube = {
 - `confirm_ui_mode`: `"float" | "buffer"`（default: `"float"`）
   - `float`: 確認 UI をフローティング表示（Neovim は Floating Window、Vim は Popup）
   - `buffer`: 確認 UI を専用バッファで表示
-- `keymaps`: `{ "<key>": "open_cursor" | "open_parent" | "close" | "toggle_size" | "toggle_permissions" }`（default: `{}`）
+- `keymaps`: `{ "<key>": "open_cursor" | "open_parent" | "close" | "toggle_size" | "toggle_permissions" | "reload" }`（default: `{}`）
   - キーは Vim の表記で指定する（例: `<CR>`, `-`, `h`）
 - `keymaps_global`: `{ "<key>": "open_shirube" }`（default: `{}`）
   - グローバルに Shirube を開くキーを指定する

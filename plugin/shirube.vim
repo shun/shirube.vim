@@ -4,6 +4,7 @@ endif
 let g:loaded_shirube = 1
 
 command! -nargs=? -complete=dir Shirube call shirube#open(<q-args>)
+command! ShirubeReload call shirube#reload()
 
 augroup shirube
   autocmd!

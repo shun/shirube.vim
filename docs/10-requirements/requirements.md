@@ -105,6 +105,7 @@ Shirube (標) は Neovim/Vim のバッファ上でファイルシステムをテ
      - `close`: Shirube バッファを閉じる。
      - `toggle_size`: サイズ表示の ON/OFF。
      - `toggle_permissions`: パーミッション表示の ON/OFF。
+     - `reload`: ディレクトリを再読み込みする。
    - `keymaps_global` で指定されたキーに応じて Shirube を開く（デフォルト無効）。
      - `open_shirube`: 現在のバッファ/ディレクトリから Shirube を開く。
 
@@ -155,7 +156,7 @@ interface Adapter {
 ### 7.6 設定
 - `confirm_ui_mode`: "float" | "buffer"。確認 UI の表示方式。default: "float"。
 - `skip_confirm`: boolean。確認 UI の表示を省略する。default: false。
-- `keymaps`: `{ "<key>": "open_cursor" | "open_parent" | "close" | "toggle_size" | "toggle_permissions" }`。default: `{}`。
+- `keymaps`: `{ "<key>": "open_cursor" | "open_parent" | "close" | "toggle_size" | "toggle_permissions" | "reload" }`。default: `{}`。
 - `keymaps_global`: `{ "<key>": "open_shirube" }`。default: `{}`。
 - `sort`: `{ "group": "none" | "directories-first" | "files-first" }`。default: `{ "group": "none" }`。
 - `meta`: `{ "size": boolean, "permissions": boolean }`。default: `{ "size": false, "permissions": false }`。

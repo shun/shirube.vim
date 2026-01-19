@@ -7,7 +7,8 @@ export type KeymapAction =
   | "open_parent"
   | "close"
   | "toggle_size"
-  | "toggle_permissions";
+  | "toggle_permissions"
+  | "reload";
 export type Keymaps = Record<string, KeymapAction>;
 export type GlobalKeymapAction = "open_shirube";
 export type GlobalKeymaps = Record<string, GlobalKeymapAction>;
@@ -87,7 +88,7 @@ const parseSortGroup = (value: unknown, fallback: SortGroup): SortGroup => {
 const isKeymapAction = (value: unknown): value is KeymapAction => {
   return value === "open_cursor" || value === "open_parent" ||
     value === "close" || value === "toggle_size" ||
-    value === "toggle_permissions";
+    value === "toggle_permissions" || value === "reload";
 };
 
 const isGlobalKeymapAction = (

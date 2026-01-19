@@ -163,6 +163,7 @@ const keymapActions: Record<KeymapAction, string> = {
   close: "shirube#close()",
   toggle_size: "shirube#toggle_size()",
   toggle_permissions: "shirube#toggle_permissions()",
+  reload: "shirube#reload()",
 };
 
 const globalKeymapActions: Record<GlobalKeymapAction, string> = {
@@ -356,6 +357,31 @@ export async function main(denops: Denops): Promise<void> {
     },
     async toggle_permissions(bufnr: unknown): Promise<void> {
       await toggleMeta(denops, bufnr, "permissions");
+    },
+    async reload(bufnr: unknown): Promise<void> {
+      const resolvedBufnr = normalizeBufnr(bufnr);
+      const config = await loadConfig(denops);
+      const logger = createLogger(config);
+      const state = getState(resolvedBufnr);
+      if (!state) {
+        await logger.error("reload.no_state", { bufnr: resolvedBufnr });
+        await notifyErrors(denops, resolvedBufnr, ["state not found"]);
+        return;
+      }
+      await logger.debug("reload.start", { bufnr: resolvedBufnr, url: state.url });
+      const cursor = await denops.call("getcurpos") as number[];
+      const lnum = cursor[1];
+      const entries = await state.adapter.listDir(state.url);
+      await logger.debug("reload.entries", { count: entries.length });
+      const sorted = sortEntries(entries, config);
+      const registered = setEntries(state, sorted);
+      setState(state);
+      const rendered = renderEntries(registered, state.meta);
+      await logger.debug("reload.render", { lines: rendered.lines.length });
+      await renderBuffer(denops, resolvedBufnr, rendered);
+      const maxLine = rendered.lines.length;
+      await denops.call("cursor", Math.min(lnum, maxLine), cursor[2]);
+      await logger.debug("reload.done");
     },
     async constrain_cursor(): Promise<void> {
       const bufnr = await denops.call("bufnr", "%") as number;

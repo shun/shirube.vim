@@ -37,8 +37,8 @@ export const renderBuffer = async (
   bufnr: number,
   result: RenderResult,
 ): Promise<void> => {
-  await denops.cmd("silent %delete _");
-  await denops.call("setline", 1, result.lines);
-  await denops.cmd("setlocal nomodified");
+  await denops.call("deletebufline", bufnr, 1, "$");
+  await denops.call("setbufline", bufnr, 1, result.lines);
+  await denops.call("setbufvar", bufnr, "&modified", 0);
   await applyVirtualText(denops, bufnr, result);
 };

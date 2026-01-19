@@ -43,6 +43,10 @@ function! shirube#toggle_permissions() abort
   call shirube#_request('toggle_permissions', [bufnr('%')])
 endfunction
 
+function! shirube#reload() abort
+  call shirube#_request('reload', [bufnr('%')])
+endfunction
+
 function! shirube#open_from_current() abort
   call shirube#_request('open_from_current', [])
 endfunction
