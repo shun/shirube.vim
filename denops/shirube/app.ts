@@ -456,7 +456,10 @@ export async function main(denops: Denops): Promise<void> {
         const targetLine = sameIdLines[i];
         const newPath = generateCopyName(entry.path, existingPaths);
         existingPaths.add(newPath);
-        const newName = newPath.slice(basePath.length + 1);
+        let newName = newPath.slice(basePath.length);
+        if (newName.startsWith("/")) {
+          newName = newName.slice(1);
+        }
         const newLine = `/${id} ${newName}`;
         await denops.call("setline", targetLine, newLine);
         await logger.debug("auto_rename_paste.renamed", {
