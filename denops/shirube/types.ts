@@ -11,6 +11,7 @@ export interface EntryMeta {
   size?: number;
   mtime?: Date;
   permissions?: string;
+  error?: string;
 }
 
 export interface Entry {

@@ -35,7 +35,14 @@ const openTarget = async (
 };
 
 type OpenTargetResult =
-  | { target: { path: string; entryType: "file" | "directory" }; errors: [] }
+  | {
+    target: {
+      path: string;
+      entryType: "file" | "directory";
+      entry?: Entry;
+    };
+    errors: [];
+  }
   | { target: null; errors: string[] }
   | { target: null; errors: [] };
 
@@ -62,6 +69,7 @@ const resolveOpenTarget = (
       target: {
         path,
         entryType: entry.isDirectory ? "directory" : "file",
+        entry,
       },
       errors: [],
     };
@@ -88,6 +96,15 @@ const notifyErrors = async (
     return;
   }
   await denops.cmd(`echoerr ${JSON.stringify(`shirube: ${errors[0]}`)}`);
+};
+
+const notifyStatus = async (
+  denops: Denops,
+  message: string,
+): Promise<void> => {
+  await denops.cmd(
+    `echohl ErrorMsg | echomsg ${JSON.stringify(`shirube: ${message}`)} | echohl None`,
+  );
 };
 
 const ensureModified = async (denops: Denops): Promise<void> => {
@@ -349,6 +366,13 @@ export async function main(denops: Denops): Promise<void> {
         if (result.errors.length > 0) {
           await notifyErrors(denops, resolvedBufnr, result.errors);
         }
+        return;
+      }
+      if (result.target.entry?.meta.error) {
+        await notifyStatus(
+          denops,
+          `failed to open: ${result.target.path}`,
+        );
         return;
       }
       await openTarget(denops, result.target.path, result.target.entryType);

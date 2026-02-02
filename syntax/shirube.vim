@@ -10,5 +10,6 @@ highlight default link ShirubeDirName Directory
 highlight default link ShirubeFileName Identifier
 highlight default link ShirubeMeta Comment
 highlight default link ShirubeIcon Identifier
+highlight default link ShirubeErrorLine ErrorMsg
 
 let b:current_syntax = 'shirube'

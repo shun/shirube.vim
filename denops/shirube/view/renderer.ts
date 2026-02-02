@@ -10,6 +10,10 @@ export interface VirtText {
 export interface RenderResult {
   lines: string[];
   virtTexts: VirtText[];
+  highlights: {
+    line: number;
+    group: string;
+  }[];
 }
 
 type MetaWidths = {
@@ -91,13 +95,19 @@ export const renderEntries = (
   meta: MetaVisibility,
 ): RenderResult => {
   if (entries.length === 0) {
-    return { lines: [""], virtTexts: [] };
+    return { lines: [""], virtTexts: [], highlights: [] };
   }
   const showMeta = meta.size || meta.permissions;
   const widths = showMeta ? calculateWidths(entries, meta) : {
     size: 1,
     permissions: 1,
   };
+  const highlights = entries.flatMap((entry, index) => {
+    if (entry.meta.error) {
+      return [{ line: index, group: "ShirubeErrorLine" }];
+    }
+    return [];
+  });
   return {
     lines: entries.map(formatLine),
     virtTexts: showMeta
@@ -106,5 +116,6 @@ export const renderEntries = (
         chunks: buildVirtText(entry, widths, meta),
       }))
       : [],
+    highlights,
   };
 };

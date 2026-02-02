@@ -41,16 +41,22 @@ export const createLocalAdapter = (): Adapter => {
       const entries: Entry[] = [];
       for await (const item of Deno.readDir(basePath)) {
         const entryPath = join(basePath, item.name);
-        const stat = await Deno.stat(entryPath);
+        let stat: Deno.FileInfo | null = null;
+        try {
+          stat = await Deno.stat(entryPath);
+        } catch {
+          stat = null;
+        }
         entries.push({
           id: 0,
           name: item.name,
-          isDirectory: stat.isDirectory,
+          isDirectory: stat ? stat.isDirectory : item.isDirectory,
           path: entryPath,
           meta: {
-            size: stat.isFile ? stat.size : undefined,
-            mtime: stat.mtime ?? undefined,
-            permissions: permissionsFromMode(stat.mode),
+            size: stat && stat.isFile ? stat.size : undefined,
+            mtime: stat?.mtime ?? undefined,
+            permissions: permissionsFromMode(stat?.mode),
+            error: stat ? undefined : "stat_failed",
           },
         });
       }
