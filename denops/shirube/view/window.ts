@@ -1,4 +1,4 @@
-import type { Denops } from "https://deno.land/x/denops_std@v6/mod.ts";
+import type { Denops } from "@denops/std";
 import type { RenderResult } from "./renderer.ts";
 
 let namespaceId: number | null = null;

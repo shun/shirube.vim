@@ -5,6 +5,6 @@ export interface Adapter {
   listDir(url: string): Promise<Entry[]>;
   isModifiable(url: string): Promise<boolean>;
   performAction(action: Action): Promise<void>;
-  normalizeUrl?(url: string): string;
-  getParent?(url: string): string;
+  normalizeUrl(url: string): string;
+  getParent(url: string): string;
 }

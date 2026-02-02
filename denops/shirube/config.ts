@@ -1,4 +1,4 @@
-import type { Denops } from "https://deno.land/x/denops_std@v6/mod.ts";
+import type { Denops } from "@denops/std";
 
 export type ConfirmUiMode = "float" | "buffer";
 
@@ -167,6 +167,6 @@ const normalizeConfig = (value: unknown): Config => {
 };
 
 export const loadConfig = async (denops: Denops): Promise<Config> => {
-  const raw = await denops.eval("get(g:, 'shirube', {})");
+  const raw = await denops.eval("get(g:, 'shirube_config', {})");
   return normalizeConfig(raw);
 };

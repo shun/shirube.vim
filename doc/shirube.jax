@@ -1,0 +1,150 @@
+*shirube.txt*   Neovim/Vim 用のテキスト編集型ファイラー
+
+Author: shun
+License: MIT (assumed, or see project root)
+
+目次                                            *shirube-contents*
+
+1. はじめに                                     |shirube-introduction|
+2. 使い方                                       |shirube-usage|
+3. コマンド                                     |shirube-commands|
+4. キーマッピング                               |shirube-key-mappings|
+5. 設定                                         |shirube-configuration|
+
+
+==============================================================================
+1. はじめに                                     *shirube-introduction*
+
+Shirube (標) は Neovim/Vim のバッファ上でファイルシステムをテキストとして直接
+編集できるファイラプラグインです。
+Deno/Denops を基盤とし、不可視IDを用いた堅牢なリネーム追跡や、Adapter パター
+ンによる拡張性を特徴としています。
+
+
+==============================================================================
+2. 使い方                                       *shirube-usage*
+
+基本的な操作フローは以下の通りです。
+
+1. コマンドでディレクトリを開く (|:Shirube|)。
+2. バッファを通常のテキストとして編集する。
+   - 新規ファイル作成: 行を追加し、ファイル名を入力 (例: `tmp`)
+   - 新規ディレクトリ作成: 行を追加し、末尾にスラッシュ (例: `tmp/`)
+   - リネーム/移動: 既存の行のファイル名を書き換え
+   - 削除: 行を削除
+   - コピー: 行をヤンク＆ペースト (自動的にリネームされます)
+3. `:write` で保存する。
+4. 確認画面が表示されるので、内容を確認して実行する。
+   - `y` または `<CR>`: 実行
+   - `n`: キャンセル
+
+
+==============================================================================
+3. コマンド                                     *shirube-commands*
+
+:Shirube [path]                                 *:Shirube*
+    [path] で指定したディレクトリを Shirube バッファで開きます。
+    [path] を省略した場合はカレントディレクトリを開きます。
+
+    既に Shirube バッファが開かれている場合、そのウィンドウへジャンプして
+    指定したパスを表示します（シングルトン動作）。
+
+:Shirube! [path]                                *:Shirube!*
+    `:Shirube` と同様ですが、既存の Shirube バッファを再利用せず、
+    強制的に現在のウィンドウで新しい Shirube バッファを開きます。
+    画面分割して複数のディレクトリを同時に表示したい場合などに使用します。
+
+:ShirubeReload                                  *:ShirubeReload*
+    現在の Shirube バッファの内容を再読み込みします。
+    外部でファイル構成が変更された場合などに使用します。
+
+
+==============================================================================
+4. キーマッピング                               *shirube-key-mappings*
+
+Shirube はデフォルトではキーマッピングを提供しません。
+`g:shirube_config` 設定内の `keymaps` および `keymaps_global` で定義する必要があ
+ります。
+
+利用可能なアクション (|shirube-configuration| 参照):
+
+バッファ内アクション (`keymaps`):
+    open_cursor         カーソル行を開く (ディレクトリなら移動、ファイルなら開く)
+    open_parent         親ディレクトリへ移動
+    close               Shirube バッファを閉じる
+    toggle_size         ファイルサイズの表示切り替え
+    toggle_permissions  パーミッションの表示切り替え
+    reload              再読み込み
+
+グローバルアクション (`keymaps_global`):
+    open_shirube        現在のバッファのディレクトリで Shirube を開く
+
+設定例: >
+    let g:shirube_config = {
+          \ "keymaps": {
+          \   "<CR>": "open_cursor",
+          \   "-": "open_parent",
+          \   "q": "close",
+          \ },
+          \ "keymaps_global": {
+          \   "-": "open_shirube",
+          \ },
+          \ }
+<
+
+==============================================================================
+5. 設定                                         *shirube-configuration*
+
+設定は `g:shirube_config` 辞書変数で行います。
+設定値の解釈は Deno 側で行われ、不正な値はデフォルト値にフォールバックしま
+す。
+
+g:shirube_config                                       *g:shirube_config*
+    設定オプションを保持する辞書。
+
+    キー                説明~
+    skip_confirm        (bool) trueなら確認UIをスキップして即時実行。
+                        Default: v:false
+
+    confirm_ui_mode     (string) 確認UIの表示モード。
+                        "float": フローティングウィンドウ (Neovim) / Popup (Vim)
+                        "buffer": 専用バッファ
+                        Default: "float"
+
+    keymaps             (dict) Shirube バッファ内のキーマップ定義。
+                        キー: Vimのキー表記 (例: "<CR>")
+                        値: アクション名 (上記参照)
+                        Default: {}
+
+    keymaps_global      (dict) グローバルなキーマップ定義。
+                        Default: {}
+
+    sort                (dict) ソート設定。
+                        "group": "none" | "directories-first" | "files-first"
+                        Default: { "group": "none" }
+
+    meta                (dict) メタ情報の表示設定。
+                        "size": (bool) ファイルサイズを表示
+                        "permissions": (bool) パーミッションを表示
+                        Default: { "size": v:false, "permissions": v:false }
+
+    log_file            (string) デバッグログ出力先パス。
+                        ディレクトリを指定した場合は `shirube.log` に出力。
+                        Default: "" (出力なし)
+
+設定例: >
+    let g:shirube_config = {
+          \ "skip_confirm": v:false,
+          \ "confirm_ui_mode": "float",
+          \ "sort": {
+          \   "group": "directories-first",
+          \ },
+          \ "meta": {
+          \   "size": v:true,
+          \   "permissions": v:true,
+          \ },
+          \ }
+<
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:noet:fen:

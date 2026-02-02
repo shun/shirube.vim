@@ -1,4 +1,13 @@
-# 設定
+# 設定・コマンド
+
+## コマンド
+- `:Shirube [path]`
+  - Shirube を開く。`path` 省略時はカレントディレクトリ。
+  - **シングルトン動作**: 既に Shirube ウィンドウが開いている場合は、そのウィンドウへジャンプして内容を更新する。
+- `:Shirube! [path]` (Bang 付き)
+  - 既存ウィンドウの再利用を行わず、現在のウィンドウで新しく Shirube バッファを開く。
+- `:ShirubeReload`
+  - 現在の Shirube バッファを再読込する。
 
 ## 方針
 - 設定は Deno 側の `config.ts` で一元管理する。
@@ -29,7 +38,7 @@
 
 ## 例
 ```vim
-let g:shirube = {
+let g:shirube_config = {
       \ "skip_confirm": v:false,
       \ "confirm_ui_mode": "float",
       \ "keymaps": {

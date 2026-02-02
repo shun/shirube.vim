@@ -1,4 +1,4 @@
-import { dirname, join } from "https://deno.land/std@0.224.0/path/mod.ts";
+import { dirname, join } from "@std/path";
 import type { Config } from "./config.ts";
 
 export type Logger = {

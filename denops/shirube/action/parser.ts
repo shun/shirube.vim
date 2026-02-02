@@ -1,4 +1,4 @@
-import { normalize, resolve } from "https://deno.land/std@0.224.0/path/mod.ts";
+import { normalize, resolve } from "@std/path";
 import type { BufferState, EntryId } from "../types.ts";
 import { urlToPath } from "../util.ts";
 

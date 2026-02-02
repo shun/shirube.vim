@@ -1,7 +1,39 @@
-function! shirube#open(path) abort
+function! shirube#open(path, ...) abort
+  let l:opts = get(a:000, 0, {})
+  let l:bang = get(l:opts, 'bang', 0)
+
   let l:path = empty(a:path) ? getcwd() : a:path
   let l:path = fnamemodify(l:path, ':p')
   let l:url = 'shirube://' . l:path
+
+  if !l:bang
+    let l:target_winid = -1
+    let l:current_winid = win_getid()
+    let l:wins = getwininfo()
+
+    " Prioritize existing shirube window in the current tab
+    for l:w in l:wins
+      if l:w.tabnr == tabpagenr() && getbufvar(l:w.bufnr, '&filetype') ==# 'shirube'
+        let l:target_winid = l:w.winid
+        break
+      endif
+    endfor
+
+    " Fallback to any shirube window
+    if l:target_winid == -1
+      for l:w in l:wins
+        if getbufvar(l:w.bufnr, '&filetype') ==# 'shirube'
+          let l:target_winid = l:w.winid
+          break
+        endif
+      endfor
+    endif
+
+    if l:target_winid != -1 && l:target_winid != l:current_winid
+      call win_gotoid(l:target_winid)
+    endif
+  endif
+
   execute 'edit' fnameescape(l:url)
 endfunction
 
@@ -29,6 +61,10 @@ endfunction
 
 function! shirube#on_buf_write() abort
   call shirube#_request('on_buf_write', [bufnr('%'), bufname('%')])
+endfunction
+
+function! shirube#on_buf_wipeout() abort
+  call shirube#_request('on_buf_wipeout', [bufnr('%')])
 endfunction
 
 function! shirube#open_cursor() abort
@@ -91,7 +127,7 @@ endfunction
 
 function! shirube#_init_buffer() abort
   setlocal buftype=acwrite
-  setlocal bufhidden=hide
+  setlocal bufhidden=wipe
   setlocal noswapfile
   setlocal modifiable
   setlocal filetype=shirube

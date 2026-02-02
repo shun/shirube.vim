@@ -1,4 +1,4 @@
-import type { Denops } from "https://deno.land/x/denops_std@v6/mod.ts";
+import type { Denops } from "@denops/std";
 import type { ConfirmUiMode } from "../config.ts";
 import type { Logger } from "../log.ts";
 import type { Action } from "../types.ts";

@@ -37,7 +37,7 @@ call plug#end()
 
 ## キーマップ（任意、デフォルト無効）
 Shirube バッファ内のキーマップはデフォルトで無効です。  
-有効化するには `g:shirube` に設定を追加してからバッファを開いてください。
+有効化するには `g:shirube_config` に設定を追加してからバッファを開いてください。
 
 - `keymaps`: キーとアクションの対応表
   - `open_cursor`: カーソル行を開く（ディレクトリなら移動、ファイルなら開く）
@@ -51,7 +51,7 @@ Shirube バッファ内のキーマップはデフォルトで無効です。
 
  例:
 ```vim
-let g:shirube = {
+let g:shirube_config = {
       \ "keymaps": {
       \   "<CR>": "open_cursor",
       \   "-": "open_parent",
@@ -64,7 +64,7 @@ let g:shirube = {
 ```
 
 ## 設定
-`g:shirube` の辞書で設定します（値が不正な場合はデフォルトにフォールバック）。
+`g:shirube_config` の辞書で設定します（値が不正な場合はデフォルトにフォールバック）。
 設定の解釈と適用は Deno (TypeScript) 側で行います。
 
 - `skip_confirm`: boolean（default: `false`）
@@ -86,7 +86,7 @@ let g:shirube = {
 
  例:
 ```vim
-let g:shirube = {
+let g:shirube_config = {
       \ "skip_confirm": v:false,
       \ "confirm_ui_mode": "float",
       \ "keymaps": {

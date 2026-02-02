@@ -1,5 +1,5 @@
-import { join } from "https://deno.land/std@0.224.0/path/mod.ts";
-import type { Denops } from "https://deno.land/x/denops_std@v6/mod.ts";
+import { join } from "@std/path";
+import type { Denops } from "@denops/std";
 import type { Adapter } from "./adapter/interface.ts";
 import { createLocalAdapter } from "./adapter/local.ts";
 import { buildActions } from "./action/diff.ts";
@@ -7,7 +7,7 @@ import { executeActions } from "./action/executor.ts";
 import { parseBuffer } from "./action/parser.ts";
 import { type Config, type GlobalKeymapAction, type KeymapAction, loadConfig } from "./config.ts";
 import { createLogger } from "./log.ts";
-import { createState, getState, setEntries, setState } from "./state.ts";
+import { createState, deleteState, getState, setEntries, setState } from "./state.ts";
 import type { Action, BufferState, Entry, MetaVisibility } from "./types.ts";
 import { generateCopyName, isShirubeUrl, normalizeBufnr, normalizeUrl, urlToPath } from "./util.ts";
 import { confirmActions } from "./view/confirm.ts";
@@ -331,6 +331,10 @@ export async function main(denops: Denops): Promise<void> {
       setState(state);
       const rendered = renderEntries(registered, state.meta);
       await renderBuffer(denops, resolvedBufnr, rendered);
+    },
+    async on_buf_wipeout(bufnr: unknown): Promise<void> {
+      const resolvedBufnr = normalizeBufnr(bufnr);
+      deleteState(resolvedBufnr);
     },
     async open_cursor(bufnr: unknown, line: unknown): Promise<void> {
       const resolvedBufnr = normalizeBufnr(bufnr);

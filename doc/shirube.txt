@@ -1,0 +1,152 @@
+*shirube.txt*   Text-editing file manager for Neovim/Vim
+
+Author: shun
+License: MIT (assumed, see project root)
+
+CONTENTS                                        *shirube-contents*
+
+1. Introduction                                 |shirube-introduction|
+2. Usage                                        |shirube-usage|
+3. Commands                                     |shirube-commands|
+4. Key Mappings                                 |shirube-key-mappings|
+5. Configuration                                |shirube-configuration|
+
+
+==============================================================================
+1. Introduction                                 *shirube-introduction*
+
+Shirube is a file manager plugin for Neovim/Vim that allows you to edit the
+file system directly as text within a buffer.
+Powered by Deno/Denops, it features robust rename tracking using invisible
+IDs and extensibility via the Adapter pattern.
+
+
+==============================================================================
+2. Usage                                        *shirube-usage*
+
+The basic workflow is as follows:
+
+1. Open a directory with the command (|:Shirube|).
+2. Edit the buffer as normal text.
+   - Create File: Add a line and type the filename (e.g., `tmp`).
+   - Create Directory: Add a line and append a slash (e.g., `tmp/`).
+   - Rename/Move: Edit the filename of an existing line.
+   - Delete: Delete the line.
+   - Copy: Yank and paste a line (it will be automatically renamed).
+3. Save the buffer with `:write`.
+4. A confirmation UI will appear. Check the changes and execute.
+   - `y` or `<CR>`: Execute
+   - `n`: Cancel
+
+
+==============================================================================
+3. Commands                                     *shirube-commands*
+
+:Shirube [path]                                 *:Shirube*
+    Open the directory specified by [path] in a Shirube buffer.
+    If [path] is omitted, the current directory is opened.
+
+    If a Shirube buffer is already open, it will jump to that window and
+    display the specified path (Singleton behavior).
+
+:Shirube! [path]                                *:Shirube!*
+    Same as `:Shirube`, but forces a new Shirube buffer to open in the
+    current window, without reusing an existing Shirube buffer.
+    Use this when you want to display multiple directories simultaneously,
+    such as in a split view.
+
+:ShirubeReload                                  *:ShirubeReload*
+    Reloads the content of the current Shirube buffer.
+    Use this if the file structure has been changed externally.
+
+
+==============================================================================
+4. Key Mappings                                 *shirube-key-mappings*
+
+Shirube does not provide default key mappings.
+You must define them in `keymaps` and `keymaps_global` within the
+`g:shirube_config` configuration.
+
+Available Actions (see |shirube-configuration|):
+
+Buffer Actions (`keymaps`):
+    open_cursor         Open the item on the cursor line.
+                        (Moves into directory, or opens file)
+    open_parent         Move to the parent directory.
+    close               Close the Shirube buffer.
+    toggle_size         Toggle file size display.
+    toggle_permissions  Toggle permission display.
+    reload              Reload the directory.
+
+Global Actions (`keymaps_global`):
+    open_shirube        Open Shirube in the current buffer's directory.
+
+Example: >
+    let g:shirube_config = {
+          \ "keymaps": {
+          \   "<CR>": "open_cursor",
+          \   "-": "open_parent",
+          \   "q": "close",
+          \ },
+          \ "keymaps_global": {
+          \   "-": "open_shirube",
+          \ },
+          \ }
+<
+
+==============================================================================
+5. Configuration                                *shirube-configuration*
+
+Configuration is done via the `g:shirube_config` dictionary variable.
+Values are interpreted on the Deno side, and invalid values fallback to defaults.
+
+g:shirube_config                                       *g:shirube_config*
+    Dictionary holding configuration options.
+
+    Key                 Description~
+    skip_confirm        (bool) If true, skips the confirmation UI and
+                        executes immediately.
+                        Default: v:false
+
+    confirm_ui_mode     (string) Confirmation UI display mode.
+                        "float": Floating Window (Neovim) / Popup (Vim)
+                        "buffer": Dedicated buffer
+                        Default: "float"
+
+    keymaps             (dict) Key map definitions within the Shirube buffer.
+                        Key: Vim key notation (e.g., "<CR>")
+                        Value: Action name (see above)
+                        Default: {}
+
+    keymaps_global      (dict) Global key map definitions.
+                        Default: {}
+
+    sort                (dict) Sort configuration.
+                        "group": "none" | "directories-first" | "files-first"
+                        Default: { "group": "none" }
+
+    meta                (dict) Meta information display configuration.
+                        "size": (bool) Show file size
+                        "permissions": (bool) Show permissions
+                        Default: { "size": v:false, "permissions": v:false }
+
+    log_file            (string) Debug log output path.
+                        If a directory is specified, outputs to `shirube.log`.
+                        Default: "" (No output)
+
+Example: >
+    let g:shirube_config = {
+          \ "skip_confirm": v:false,
+          \ "confirm_ui_mode": "float",
+          \ "sort": {
+          \   "group": "directories-first",
+          \ },
+          \ "meta": {
+          \   "size": v:true,
+          \   "permissions": v:true,
+          \ },
+          \ }
+<
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:noet:fen:
