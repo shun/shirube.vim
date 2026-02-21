@@ -38,28 +38,33 @@ export const createLocalAdapter = (): Adapter => {
     scheme: SCHEME,
     async listDir(url: string): Promise<Entry[]> {
       const basePath = urlToPath(url);
-      const entries: Entry[] = [];
+      const promises: Promise<Entry>[] = [];
       for await (const item of Deno.readDir(basePath)) {
         const entryPath = join(basePath, item.name);
-        let stat: Deno.FileInfo | null = null;
-        try {
-          stat = await Deno.stat(entryPath);
-        } catch {
-          stat = null;
-        }
-        entries.push({
-          id: 0,
-          name: item.name,
-          isDirectory: stat ? stat.isDirectory : item.isDirectory,
-          path: entryPath,
-          meta: {
-            size: stat && stat.isFile ? stat.size : undefined,
-            mtime: stat?.mtime ?? undefined,
-            permissions: permissionsFromMode(stat?.mode),
-            error: stat ? undefined : "stat_failed",
-          },
-        });
+        promises.push(
+          (async () => {
+            let stat: Deno.FileInfo | null = null;
+            try {
+              stat = await Deno.stat(entryPath);
+            } catch {
+              stat = null;
+            }
+            return {
+              id: 0,
+              name: item.name,
+              isDirectory: stat ? stat.isDirectory : item.isDirectory,
+              path: entryPath,
+              meta: {
+                size: stat && stat.isFile ? stat.size : undefined,
+                mtime: stat?.mtime ?? undefined,
+                permissions: permissionsFromMode(stat?.mode),
+                error: stat ? undefined : "stat_failed",
+              },
+            };
+          })()
+        );
       }
+      const entries = await Promise.all(promises);
       entries.sort((a, b) => a.name.localeCompare(b.name));
       return entries;
     },

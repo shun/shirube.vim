@@ -22,6 +22,8 @@ const stripTrailingSlash = (value: string): string => {
   return value.replace(/\/+$/, "");
 };
 
+const ENTRY_LINE_REGEX = /^\/(\d+) (.*)$/;
+
 export const parseBuffer = (
   lines: string[],
   state: BufferState,
@@ -38,7 +40,7 @@ export const parseBuffer = (
     if (line.trim().length === 0) {
       continue;
     }
-    const matched = line.match(/^\/(\d+) (.*)$/);
+    const matched = line.match(ENTRY_LINE_REGEX);
     if (matched) {
       const id = Number(matched[1]);
       const name = stripTrailingSlash(matched[2]);

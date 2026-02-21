@@ -237,6 +237,8 @@ const openFromCurrent = async (denops: Denops): Promise<void> => {
   await openTarget(denops, target, "directory");
 };
 
+const ENTRY_ID_REGEX = /^\/(\d+) /;
+
 export async function main(denops: Denops): Promise<void> {
   denops.dispatcher = {
     async on_buf_read(bufnr: unknown, url: unknown): Promise<void> {
@@ -421,7 +423,7 @@ export async function main(denops: Denops): Promise<void> {
       const lnum = cursor[1];
       const col = cursor[2];
       const line = await denops.call("getline", lnum) as string;
-      const match = line.match(/^\/(\d+) /);
+      const match = line.match(ENTRY_ID_REGEX);
       if (!match) {
         return;
       }
@@ -444,7 +446,7 @@ export async function main(denops: Denops): Promise<void> {
         return;
       }
       const line = await denops.call("getline", lineNum) as string;
-      const match = line.match(/^\/(\d+) /);
+      const match = line.match(ENTRY_ID_REGEX);
       if (!match) {
         await logger.debug("auto_rename_paste.no_id", { line });
         return;
@@ -453,7 +455,7 @@ export async function main(denops: Denops): Promise<void> {
       const lines = await denops.call("getline", 1, "$") as string[];
       const sameIdLines: number[] = [];
       for (let i = 0; i < lines.length; i++) {
-        const m = lines[i].match(/^\/(\d+) /);
+        const m = lines[i].match(ENTRY_ID_REGEX);
         if (m && Number(m[1]) === id) {
           sameIdLines.push(i + 1);
         }
