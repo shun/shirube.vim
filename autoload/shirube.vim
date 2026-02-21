@@ -115,14 +115,18 @@ function! shirube#_request(method, params) abort
     echoerr 'shirube: denops.vim is required'
     return
   endif
-  call denops#server#connect_or_start()
-  if denops#server#wait() < 0
-    return
+
+  if denops#server#status() !=# 'running' || denops#plugin#is_loaded('shirube') == 0
+    call denops#server#connect_or_start()
+    if denops#server#wait() < 0
+      return
+    endif
+    if denops#plugin#wait('shirube') != 0
+      return
+    endif
   endif
-  if denops#plugin#wait('shirube') != 0
-    return
-  endif
-  call denops#request('shirube', a:method, a:params)
+
+  return denops#request('shirube', a:method, a:params)
 endfunction
 
 function! shirube#_init_buffer() abort
@@ -131,6 +135,16 @@ function! shirube#_init_buffer() abort
   setlocal noswapfile
   setlocal modifiable
   setlocal filetype=shirube
+
+  " Show a placeholder while Deno worker is spinning up
+  silent! %delete _
+  let l:target = fnamemodify(bufname('%'), ':p')
+  call setline(1, 'Loading shirube... (' . l:target . ')')
+  setlocal nomodified
+
+  " Force screen redraw before blocking for Denops
+  redraw
+
   call shirube#_init_window()
   augroup ShirubeConstrainCursor
     autocmd! * <buffer>

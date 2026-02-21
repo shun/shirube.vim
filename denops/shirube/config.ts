@@ -167,6 +167,22 @@ const normalizeConfig = (value: unknown): Config => {
 };
 
 export const loadConfig = async (denops: Denops): Promise<Config> => {
-  const raw = await denops.eval("get(g:, 'shirube_config', {})");
-  return normalizeConfig(raw);
+  let rawJson = "{}";
+  try {
+    const encoded = await denops.eval("json_encode(get(g:, 'shirube_config', {}))");
+    rawJson = typeof encoded === "string" ? encoded : "{}";
+  } catch (error) {
+    console.error("[shirube] loadConfig: failed to evaluate g:shirube_config", error);
+    return defaultConfig;
+  }
+  try {
+    const parsed = JSON.parse(rawJson) as unknown;
+    return normalizeConfig(parsed);
+  } catch (error) {
+    console.error("[shirube] loadConfig: failed to parse g:shirube_config", {
+      error,
+      rawJson,
+    });
+    return defaultConfig;
+  }
 };
